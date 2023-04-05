@@ -1,12 +1,16 @@
 #include "mbed.h"
 #include <InterruptIn.h>
 #include <chrono>
+#include <ratio>
+
+using namespace std;
+using namespace chrono;
 
 #define KP 0.5f
 #define KI 0.2f
 #define KD 0.2f
 
-#define PWM_PERIOD 100
+#define PWM_PERIOD 100 //us
 
 #define ENA D3
 #define ENB D6
@@ -35,9 +39,14 @@
 #define OUTL D12
 #define OUTR D2
 
-#define LEDON D13
+#define LED D13
 
-typedef std::chrono::microseconds usec;
+typedef microseconds usec;
+typedef duration<float, std::micro> usecf;
+
+
+DigitalOut led(LED);
+
 
 // Pont H
 PwmOut ena(ENA);
@@ -46,9 +55,12 @@ DigitalOut in1(IN1);
 DigitalOut in2(IN2);
 DigitalOut in3(IN3);
 DigitalOut in4(IN4);
-DigitalOut ledon(LEDON);
 
-// Capteur Sonor
+// Capteur Sonore
+const usec SONORE_RESTART_INT = 60000us; 
+const usec TRIG_PULSE_DUR = 10us; 
+const usecf SOUND_SPEED = 0.034us;
+
 DigitalOut trig(TRIG);
 InterruptIn echo(ECHO);
 usec echo_pulse_dur;
@@ -87,27 +99,37 @@ static void gen_trig_pulse() {
 static void check_trig_pulse() {
     if (!trig) return;
 
-    if (trig_timer.elapsed_time() >= 10) {
+    if (trig_timer.elapsed_time() >= TRIG_PULSE_DUR) {
         trig = 0;
         trig_timer.stop();
     }
 }
 
-static void sonor_ctrl() {
-    
-    if (trig_repeat_timer.elapsed_time().count() > )
+static void sonore_ctrl() {
+    if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
+        gen_trig_pulse();
+        trig_repeat_timer.reset();
+    }
+}
+
+static void run_sonore() {
     gen_trig_pulse();
-    
 }
 
 static void on_echo_rise() {
     echo_timer.start();
+    led = 1;
 }
 
 static void on_echo_fall() {
     echo_timer.stop();
     
-    echo_pulse_dur = echo_timer.elapsed_time().count();
+    led = 0;
+    echo_pulse_dur = echo_timer.elapsed_time();
+}
+
+static float get_obstacle_dist(usec pulse_dur) {
+    return (SOUND_SPEED.count() * pulse_dur.count()) / 2.0f;
 }
 
 static void config_ports() {
@@ -133,9 +155,11 @@ float read_lir(float lir) {
 int main()
 {
     config_ports();
+    run_sonore();
 
     while (1) {
         check_trig_pulse();
+        sonore_ctrl();
 
        // printf("%d %d %d %d %d %d\n\r", (int)(lir2 * 10), (int)(lir3 * 10), (int)(lir4 * 10), (int)(lir5 * 10), (int)(lir6 * 10), (int)(lir7 * 10));
         
