@@ -1,14 +1,17 @@
 #include "mbed.h"
+#include "PID.h"
+
 #include <InterruptIn.h>
 #include <chrono>
+#include <cstdint>
 #include <ratio>
 
 using namespace std;
 using namespace chrono;
 
-#define KP 0.5f
+#define KP 0.2f
 #define KI 0.2f
-#define KD 0.2f
+#define KD 0.3f
 
 #define PWM_PERIOD 100 //us
 
@@ -47,6 +50,16 @@ typedef duration<float, std::micro> usecf;
 
 DigitalOut led(LED);
 
+// PID controller
+
+const float PID_Max_Out = 1.0f;
+const float PID_Min_Out = 0.0f;
+const usec PID_Sample_Rate = 1000us; 
+Timer pid_timer;
+float prev_pid_val;
+int prev_error;
+int pid_integr;
+int pid_deriv;
 
 // Pont H
 PwmOut ena(ENA);
@@ -72,27 +85,39 @@ Timer trig_repeat_timer;
 
 DigitalIn lir1(LIR1);
 DigitalIn lir2(LIR2);
-/*DigitalIn lir3(LIR3);
-DigitalIn lir5(LIR5);
+///*
+DigitalIn lir3(LIR3);
 DigitalIn lir4(LIR4);
-DigitalIn lir6(LIR6);*/
+DigitalIn lir5(LIR5);
+DigitalIn lir6(LIR6);
+//*/
 DigitalIn lir7(LIR7);
 DigitalIn lir8(LIR8);
 
 //AnalogIn lir2(LIR2);
+/*
 AnalogIn lir3(LIR3);
 AnalogIn lir4(LIR4);
 AnalogIn lir5(LIR5);
 AnalogIn lir6(LIR6);
-
+*/
 #pragma end_region Capteurs_Infra_Rouges
 
 float ecart;
 float ecart_presced;
 //AnalogIn lir7(LIR7);
 
+float lir(float l) {
+    return (1.0f - l);
+}
+
+float lir(int l) {
+    return (1 - l);
+}
+
 static void gen_trig_pulse() {
     trig = 1;
+    //printf("trig\n\r");
     trig_timer.start();
 }
 
@@ -101,14 +126,17 @@ static void check_trig_pulse() {
 
     if (trig_timer.elapsed_time() >= TRIG_PULSE_DUR) {
         trig = 0;
+        //printf("fin_trig\n\r");
         trig_timer.stop();
     }
 }
 
 static void sonore_ctrl() {
+    check_trig_pulse();
+
     if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
-        gen_trig_pulse();
         trig_repeat_timer.reset();
+        gen_trig_pulse();
     }
 }
 
@@ -118,13 +146,14 @@ static void run_sonore() {
 
 static void on_echo_rise() {
     echo_timer.start();
-    led = 1;
+   // printf("rise\n\r");
+   // led = 1;
 }
 
 static void on_echo_fall() {
     echo_timer.stop();
-    
-    led = 0;
+    //printf("fall\n\r");
+    //led = 0;
     echo_pulse_dur = echo_timer.elapsed_time();
 }
 
@@ -132,10 +161,69 @@ static float get_obstacle_dist(usec pulse_dur) {
     return (SOUND_SPEED.count() * pulse_dur.count()) / 2.0f;
 }
 
+static void pid_set_output(float &out) {
+    if (out <= 0.0f) {
+        out = 0.0f;
+    } else if (out >= 1.0f) {
+        out = 1.0f;
+    }
+}
+
+static int pid_error() {
+    if ((!lir(lir6) || !lir(lir7) || !lir(lir8)) && (!lir(lir3) || !lir(lir2) || !lir(lir1))) return 0;
+
+    if (lir(lir6) && !lir(lir7)) return 1;
+    if (lir(lir3) && !lir(lir2)) return -1;
+    if (lir(lir6) && lir(lir7) && !lir(lir8)) return 2;
+    if (lir(lir3) && lir(lir2) && !lir(lir1)) return -2;
+    if (lir(lir7) && lir(lir8)) return 3;
+    if (lir(lir2) && lir(lir1)) return -3;
+    if (!lir(lir7) && lir(lir8)) return 4;
+    if (!lir(lir2) && lir(lir1)) return -4;
+
+    return 0;
+}
+
+static float pid_compute() {
+    uint32_t dt;
+
+    dt = pid_timer.elapsed_time().count();
+
+    if (dt > PID_Sample_Rate.count()) {
+        int error = pid_error();
+        pid_integr += error;
+        pid_deriv = error - prev_error;
+
+        prev_error = error;
+        prev_pid_val = (KP * error) + (KI * pid_deriv) + (KD * pid_integr);
+        
+        pid_set_output(prev_pid_val);
+        pid_timer.reset();
+
+        return prev_pid_val;
+    }
+
+    return prev_pid_val;
+}
+
+static void pid_control() {
+    float pid_val = pid_compute();
+    ena.write(1.0f + pid_val);
+    enb.write(1.0f - pid_val);
+}
+
 static void config_ports() {
+   /* controller.setInputLimits(0.0f, 3.3f);
+    controller.setOutputLimits(0.0f, 1.0f);
+    controller.setBias(0.3f);
+    controller.setMode(1);*/
+
     echo.rise(&on_echo_rise);
     echo.fall(&on_echo_fall);
     echo.mode(PullDown);
+
+    trig_repeat_timer.start();
+    pid_timer.start();
 
     ena.period_us(PWM_PERIOD);
     ena.write(0);
@@ -148,18 +236,15 @@ static void config_ports() {
     in4 = 0;
 }
 
-float read_lir(float lir) {
-    return lir;
-}
-
 int main()
 {
     config_ports();
     run_sonore();
 
     while (1) {
-        check_trig_pulse();
         sonore_ctrl();
+        
+        pid_control();
 
        // printf("%d %d %d %d %d %d\n\r", (int)(lir2 * 10), (int)(lir3 * 10), (int)(lir4 * 10), (int)(lir5 * 10), (int)(lir6 * 10), (int)(lir7 * 10));
         
