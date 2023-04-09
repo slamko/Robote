@@ -1,9 +1,7 @@
-/*#include "mbed.h"
+#ifndef R_PINOUT
+#define R_PINOUT
 
-#include <InterruptIn.h>
-#include <chrono>
-#include <cstdint>
-#include <ratio>
+#include "mbed.h"
 
 using namespace std;
 using namespace chrono;
@@ -38,7 +36,8 @@ using namespace chrono;
 
 #define LED D13
 
-typedef microseconds usec;
+typedef std::chrono::microseconds usec;
 typedef duration<float, std::micro> usecf;
+typedef duration<int, std::micro> useci;
 
-*/
+#endif

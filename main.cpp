@@ -1,5 +1,6 @@
 #include "mbed.h"
-#include "PID.h"
+#include "pinout.h"
+#include "sonore.h"
 
 #include <InterruptIn.h>
 #include <chrono>
@@ -13,80 +14,38 @@ using namespace chrono;
 #define KP 0.20f // 0.22
 #define KI 0.0f
 #define KD 0.9f // 1.0
-#define KP_S 0.16f // 0.22
-#define KI 0.0f
-#define KD_S 0.75f 
 
-#define PWM_PERIOD 100 //us
-
-#define ENA D3
-#define ENB D6
-
-#define IN1 D4
-#define IN2 D5
-#define IN3 D8
-#define IN4 D7
-
-#define ECHO D1
-#define TRIG D0
-
-#define LIR1 D9 // LED INFRA ROURGE
-#define LIR2 D10
-#define LIR3 A6
-#define LIR4 A0
-#define LIR5 A3
-#define LIR6 A2
-#define LIR7 A1
-#define LIR8 D11
-
-#define B D9
-#define R D10
-#define Y D11
-
-#define OUTL D12
-#define OUTR D2
-
-#define LED D13
-
-typedef microseconds usec;
-typedef duration<float, std::micro> usecf;
-
+#define KP_SP 0.16f 
+#define KI_SP 0.0f
+#define KD_SP 0.75f 
 
 DigitalOut led(LED);
 
 // PID controller
 
-const float PID_Max_Out = 1.0f;
-const float PID_Min_Out = 0.0f;
-const usec PID_Sample_Rate = 1000us; 
-Timer pid_timer;
-float prev_pid_val;
+const float PID_Max_Out = 2.0f;
+const float PID_Min_Out = -2.0f;
 const float MAX_SPEED = 1.0f;
-int prev_error;
-int last_error;
+
+const usec PID_Sample_Rate = 1000us; 
+
+float prev_pid_val;
+int8_t prev_error;
 int pid_integr;
 int pid_deriv;
+
+Timer pid_timer;
 //Ticker pid_tick;
 
 // Pont H
+constexpr int PWM_PERIOD = useci(100).count();
+
 PwmOut ena(ENA);
 PwmOut enb(ENB);
 DigitalOut in1(IN1);
 DigitalOut in2(IN2);
 DigitalOut in3(IN3);
 DigitalOut in4(IN4);
-
-// Capteur Sonore
-const usec SONORE_RESTART_INT = 60000us; 
-const usec TRIG_PULSE_DUR = 10us; 
-const usecf SOUND_SPEED = 0.034us;
-
-DigitalOut trig(TRIG);
-InterruptIn echo(ECHO);
-usec echo_pulse_dur;
-Timer echo_timer;
-Timer trig_timer;
-Timer trig_repeat_timer;
 
 #pragma region Capteurs_Infra_Rouges
 
@@ -108,74 +67,35 @@ AnalogIn lir4(LIR4);
 AnalogIn lir5(LIR5);
 AnalogIn lir6(LIR6);
 */
+//AnalogIn lir7(LIR7);
+
 #pragma end_region Capteurs_Infra_Rouges
 
-//AnalogIn lir7(LIR7);
+
+float lir(float l) {
+    return (1.0f - l);
+}
 
 int lir(int l) {
     return !l;
 }
 
-static void gen_trig_pulse() {
-    trig = 1;
-    //printf("trig\n\r");
-    trig_timer.start();
-}
-
-static void check_trig_pulse() {
-    if (!trig) return;
-
-    if (trig_timer.elapsed_time() >= TRIG_PULSE_DUR) {
-        trig = 0;
-        //printf("fin_trig\n\r");
-        trig_timer.stop();
+static void pid_limit_out(float &out) {
+    if (out <= PID_Min_Out) {
+        out = PID_Min_Out;
+    } else if (out >= PID_Max_Out) {
+        out = PID_Max_Out;
     }
 }
 
-static void sonore_ctrl() {
-    check_trig_pulse();
-
-    if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
-        trig_repeat_timer.reset();
-        gen_trig_pulse();
-    }
-}
-
-static void run_sonore() {
-    gen_trig_pulse();
-}
-
-static void on_echo_rise() {
-    echo_timer.start();
-   // printf("rise\n\r");
-   // led = 1;
-}
-
-static void on_echo_fall() {
-    echo_timer.stop();
-    //printf("fall\n\r");
-    //led = 0;
-    echo_pulse_dur = echo_timer.elapsed_time();
-}
-
-static float get_obstacle_dist(usec pulse_dur) {
-    return (SOUND_SPEED.count() * pulse_dur.count()) / 2.0f;
-}
-
-static void pid_set_output(float &out) {
-    if (out <= -1.0f) {
-        out = -1.0f;
-    } else if (out >= 1.0f) {
-        out = 1.0f;
-    }
-}
-
-static int pid_error() {
+static int8_t pid_error() {
 
     #ifdef DEBUG
     printf("%d %d %d %d %d %d %d %d\n\r", lir(lir1), lir(lir2), lir(lir3), lir(lir4), lir(lir5), lir(lir6), lir(lir7), lir(lir8));
     #endif
+
    // if ((lir(lir6) || lir(lir7) || lir(lir8)) && (lir(lir3) || lir(lir2) || lir(lir1))) return 0;
+    
     if (!lir(lir6) && !lir(lir7) && !lir(lir8) && !lir(lir5) && !lir(lir3) && !lir(lir2) && !lir(lir1) && !lir(lir4))  {
         if (prev_error > 0) {
             return 5;
@@ -204,18 +124,19 @@ static int pid_error() {
 
 static float pid_compute() {
 
-    if (pid_timer.elapsed_time() > PID_Sample_Rate ) {
-        int error = pid_error();
+    if (pid_timer.elapsed_time() > PID_Sample_Rate) {
+        int8_t error = pid_error();
+
 #ifdef DEBUG
         printf("%d\n\r", error);
 #endif
         
         if (error > 4 ) {
             pid_deriv = +1;
-            prev_pid_val = (KP_S * error) + (KI * pid_integr) + (KD_S * pid_deriv);
+            prev_pid_val = (KP_SP * error) + (KI * pid_integr) + (KD_SP * pid_deriv);
         } else if (error < -4) {
             pid_deriv = -1;
-            prev_pid_val = (KP_S * error) + (KI * pid_integr) + (KD_S * pid_deriv);
+            prev_pid_val = (KP_SP * error) + (KI * pid_integr) + (KD_SP * pid_deriv);
         }
         else {
             pid_integr += error;
@@ -224,7 +145,7 @@ static float pid_compute() {
         }
 
         prev_error = error;
-        //pid_set_output(prev_pid_val);
+        //pid_limit_out(prev_pid_val);
         pid_timer.reset();
 
         return prev_pid_val;
@@ -259,17 +180,7 @@ static void pid_control() {
 }
 
 static void config_ports() {
-   /* controller.setInputLimits(0.0f, 3.3f);
-    controller.setOutputLimits(0.0f, 1.0f);
-    controller.setBias(0.3f);
-    controller.setMode(1);*/
 
-    echo.rise(&on_echo_rise);
-    echo.fall(&on_echo_fall);
-    echo.mode(PullDown);
-
-    trig_repeat_timer.start();
-    
     pid_timer.start();
    // pid_tick.attach(&pid_control, PID_Sample_Rate);
 
@@ -287,12 +198,11 @@ static void config_ports() {
 int main()
 {
     config_ports();
-    run_sonore();
+    //Sonore::sonore_init();
 
     while (1) {
-        sonore_ctrl();
         pid_control();
-
+        //Sonore::sonore_ctrl();
         
         
        // ena.write((read_lir(lir5) / 3.0f) + (read_lir(lir6) / 4.0f) + (read_lir((float)lir7) / 5.0f));
