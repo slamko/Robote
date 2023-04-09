@@ -3,11 +3,11 @@
 #include "pinout.h"
 
 namespace Sonore {
-    void sonore_ctrl();
+    void control();
 
     void run_sonore();
 
-    void sonore_init();
+    void init();
 
     float get_obstacle_dist(usec pulse_dur);
 }

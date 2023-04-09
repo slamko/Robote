@@ -26,13 +26,13 @@ namespace Sonore {
     Timer trig_repeat_timer;
 
 
-    void gen_trig_pulse() {
+    static void gen_trig_pulse() {
         trig = 1;
         //printf("trig\n\r");
         trig_timer.start();
     }
 
-    void check_trig_pulse() {
+    static void check_trig_pulse() {
         if (!trig) return;
 
         if (trig_timer.elapsed_time() >= TRIG_PULSE_DUR) {
@@ -42,13 +42,13 @@ namespace Sonore {
         }
     }
 
-    void on_echo_rise() {
+    static void on_echo_rise() {
         echo_timer.start();
-    // printf("rise\n\r");
-    // led = 1;
+        // printf("rise\n\r");
+        // led = 1;
     }
 
-    void on_echo_fall() {
+    static void on_echo_fall() {
         echo_timer.stop();
         //printf("fall\n\r");
         //led = 0;
@@ -56,7 +56,7 @@ namespace Sonore {
     }
     
 
-    void sonore_ctrl() {
+    void control() {
         check_trig_pulse();
 
         if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
@@ -73,7 +73,7 @@ namespace Sonore {
         return (SOUND_SPEED.count() * pulse_dur.count()) / 2.0f;
     }
 
-    void sonore_init() {
+    void init() {
         trig_repeat_timer.start();
     
         echo.rise(&on_echo_rise);

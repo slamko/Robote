@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "pinout.h"
 #include "pid.h"
-#include "ponth.h"
+#include "pont.h"
 #include "lir.h"
 
 const float PID_Max_Out = 2.0f;
@@ -29,10 +29,12 @@ namespace PID {
     }
 
     static int8_t pid_error() {
-        int l1 = LIR::lir1.read<int>(), l2 = LIR::lir2.read<int>(), 
-            l3 = LIR::lir3.read<int>(), l4 = LIR::lir4.read<int>(), 
-            l5 = LIR::lir5.read<int>(), l6 = LIR::lir6.read<int>(),
-            l7 = LIR::lir7.read<int>(), l8 = LIR::lir8.read<int>();
+        int l1 = LIR::lir1, l2 = LIR::lir2, 
+            l3 = LIR::lir3, l4 = LIR::lir4, 
+            l5 = LIR::lir5, l6 = LIR::lir6,
+            l7 = LIR::lir7, l8 = LIR::lir8;
+
+        float l9 = LIR::lir7;
 
 
 #ifdef DEBUG

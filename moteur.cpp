@@ -1,5 +1,5 @@
 #include "mbed.h"
-#include "ponth.h"
+#include "pont.h"
 #include "pinout.h"
 
 
@@ -48,12 +48,10 @@ namespace H {
     void init() {   
         ena.period_us(PWM_PERIOD);
         ena.write(0);
-        in1 = 1;
-        in2 = 0;
+        moteur_droit_avant();
 
         enb.period_us(PWM_PERIOD);
         enb.write(0);
-        in3 = 1;
-        in4 = 0;
+        moteur_gauche_avant();
     }
 }
