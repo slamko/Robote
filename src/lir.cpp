@@ -1,8 +1,8 @@
 #include "mbed.h"
-#include "lir.h"
+#include "include/lir.h"
 
 namespace LIR {
-    template <typename T>
+    template <class T>
     lir<T>::lir(PinName pin, bool inverse) : capteur(pin), inverse_read(inverse) {}
 
     lir<DigitalIn> lir1{LIR1, PISTE_BLANCHE};

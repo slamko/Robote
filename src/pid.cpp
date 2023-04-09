@@ -1,8 +1,8 @@
 #include "mbed.h"
-#include "config.h"
-#include "pid.h"
-#include "pont.h"
-#include "lir.h"
+#include "include/config.h"
+#include "include/pid.h"
+#include "include/pont.h"
+#include "include/lir.h"
 
 const float PID_Max_Out = 2.0f;
 const float PID_Min_Out = -2.0f;
@@ -17,8 +17,6 @@ static int pid_deriv;
 
 Timer pid_timer;
 //Ticker pid_tick;
-
-
 
 namespace PID {
 

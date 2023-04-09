@@ -4,12 +4,12 @@
 #include "config.h"
 
 namespace LIR {
-    template <typename T>
+    template <class T>
     class lir {
     public:
         lir(PinName pin, bool inverse);
         
-        template<typename Ret>
+        template<class Ret>
         Ret read();
 
         template<class Ret>
@@ -20,7 +20,7 @@ namespace LIR {
     };
 
     template <class T>
-    template <typename Ret>
+    template <class Ret>
     Ret lir<T>::read() {
         if (inverse_read) {
             return static_cast<Ret>(1.0f - static_cast<float>(capteur.read()));
@@ -29,7 +29,7 @@ namespace LIR {
     }
 
     template <>
-    template <typename Ret>
+    template <class Ret>
     Ret lir<mbed::DigitalIn>::read() {
         if (inverse_read) {
             return static_cast<Ret>(!capteur.read());
@@ -38,7 +38,7 @@ namespace LIR {
     }
 
     template <>
-    template <typename Ret>
+    template <class Ret>
     Ret lir<mbed::AnalogIn>::read() {
         if (inverse_read) {
             return static_cast<Ret>(1.0f - capteur.read());

@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <ratio>
 
-#include "config.h"
-#include "sonore.h"
+#include "include/config.h"
+#include "include/sonore.h"
 
 
 using namespace std;

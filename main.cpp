@@ -1,9 +1,9 @@
 #include "mbed.h"
-#include "src/config.h"
-#include "src/sonore.h"
-#include "src/pont.h"
-#include "src/lir.h"
-#include "src/pid.h"
+#include "include/config.h"
+#include "include/sonore.h"
+#include "include/pont.h"
+#include "include/lir.h"
+#include "include/pid.h"
 
 static void init() {
     Sonore::init();
