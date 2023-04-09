@@ -1,5 +1,5 @@
 #include "mbed.h"
-#include "pinout.h"
+#include "config.h"
 #include "pid.h"
 #include "pont.h"
 #include "lir.h"
@@ -10,13 +10,15 @@ const float MAX_SPEED = 1.0f;
 
 const usec PID_Sample_Rate = 1000us; 
 
-float prev_pid_val;
-int8_t prev_error;
-int pid_integr;
-int pid_deriv;
+static float prev_pid_val;
+static int8_t prev_error;
+static int pid_integr;
+static int pid_deriv;
 
 Timer pid_timer;
 //Ticker pid_tick;
+
+
 
 namespace PID {
 
@@ -29,13 +31,11 @@ namespace PID {
     }
 
     static int8_t pid_error() {
-        int l1 = LIR::lir1, l2 = LIR::lir2, 
+        const int 
+            l1 = LIR::lir1, l2 = LIR::lir2, 
             l3 = LIR::lir3, l4 = LIR::lir4, 
             l5 = LIR::lir5, l6 = LIR::lir6,
             l7 = LIR::lir7, l8 = LIR::lir8;
-
-        float l9 = LIR::lir7;
-
 
 #ifdef DEBUG
         printf("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8);
@@ -101,7 +101,7 @@ namespace PID {
         return prev_pid_val;
     }
 
-    void compute() {
+    void calcul() {
         float pid_val = pid_compute(); 
         
         // si pid_val > 0 ==> tourner vers la gauche

@@ -1,5 +1,5 @@
 #include "mbed.h"
-#include "pinout.h"
+#include "config.h"
 
 #define KP 0.20f // 0.22
 #define KI 0.0f
@@ -11,7 +11,7 @@
 
 namespace PID {
 
-    void compute();
+    void calcul();
 
     void init();
 

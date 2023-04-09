@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <ratio>
 
-#include "pinout.h"
+#include "config.h"
 #include "sonore.h"
 
 

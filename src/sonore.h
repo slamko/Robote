@@ -1,6 +1,6 @@
 #ifndef R_SONORE 
 #define R_SONORE 
-#include "pinout.h"
+#include "config.h"
 
 namespace Sonore {
     void control();

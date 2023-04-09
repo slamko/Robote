@@ -19,6 +19,10 @@ project(${APP_TARGET})
 
 target_sources(${APP_TARGET}
     PRIVATE
+        moteur.cpp
+        sonore.cpp
+        lir.cpp
+        pid.cpp
         main.cpp
 )
 

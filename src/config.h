@@ -3,10 +3,6 @@
 
 #include "mbed.h"
 
-using namespace std;
-using namespace chrono;
-
-
 #define ENA D3
 #define ENB D6
 
@@ -36,8 +32,10 @@ using namespace chrono;
 
 #define LED D13
 
-typedef std::chrono::microseconds usec;
-typedef duration<float, std::micro> usecf;
-typedef duration<int, std::micro> useci;
+using usec = std::chrono::microseconds;
+using usecf = std::chrono::duration<float, std::micro>;
+using useci = std::chrono::duration<int, std::micro>;
+
+#define PISTE_BLANCHE true
 
 #endif

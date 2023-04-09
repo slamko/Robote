@@ -1,6 +1,6 @@
 #include "mbed.h"
 #include "pont.h"
-#include "pinout.h"
+#include "config.h"
 
 
 static const int PWM_PERIOD = useci(100).count();
