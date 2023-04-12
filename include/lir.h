@@ -4,10 +4,18 @@
 #include "config.h"
 
 namespace LIR {
+
+    enum PisteType {
+        Noire = false,
+        Blanche = true
+    };
+
+    static constexpr PisteType piste = PisteType::Blanche;
+
     template <class T>
     class lir {
     public:
-        lir(PinName pin, bool inverse);
+        lir(PinName pin);
         
         template<class Ret>
         Ret read();
@@ -15,23 +23,16 @@ namespace LIR {
         template<class Ret>
         operator Ret();
     private:
-        bool inverse_read;
         T capteur;
     };
 
-    template <class T>
-    template <class Ret>
-    Ret lir<T>::read() {
-        if (inverse_read) {
-            return static_cast<Ret>(1.0f - static_cast<float>(capteur.read()));
-        }
-        return static_cast<Ret>(capteur.read());
-    }
+    bool inverse_read();
+    void init(bool inverse = piste);
 
     template <>
     template <class Ret>
     Ret lir<mbed::DigitalIn>::read() {
-        if (inverse_read) {
+        if (inverse_read()) {
             return static_cast<Ret>(!capteur.read());
         }
         return static_cast<Ret>(capteur.read());
@@ -40,16 +41,10 @@ namespace LIR {
     template <>
     template <class Ret>
     Ret lir<mbed::AnalogIn>::read() {
-        if (inverse_read) {
+        if (inverse_read()) {
             return static_cast<Ret>(1.0f - capteur.read());
         }
         return static_cast<Ret>(capteur.read());
-    }
-
-    template <class T>
-    template <class Ret>
-    lir<T>::operator Ret() {
-        return read<Ret>();
     }
 
     template <>
@@ -63,7 +58,6 @@ namespace LIR {
     lir<mbed::AnalogIn>::operator Ret() {
         return read<Ret>();
     }
-
 
     extern lir<DigitalIn> lir1;
     extern lir<DigitalIn> lir2;

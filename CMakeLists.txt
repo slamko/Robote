@@ -19,7 +19,7 @@ project(${APP_TARGET})
 
 target_sources(${APP_TARGET}
     PRIVATE
-        moteur.cpp
+        pont_h.cpp
         sonore.cpp
         lir.cpp
         pid.cpp

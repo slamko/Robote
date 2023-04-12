@@ -4,16 +4,25 @@
 #include "include/pont.h"
 #include "include/lir.h"
 
+//#define DEBUG
+
 const float PID_Max_Out = 2.0f;
 const float PID_Min_Out = -2.0f;
 const float MAX_SPEED = 1.0f;
 
+#ifdef DEBUG
+const usec PID_Sample_Rate = 1000000us; 
+#else
 const usec PID_Sample_Rate = 1000us; 
+#endif
 
 static float prev_pid_val;
 static int8_t prev_error;
 static int pid_integr;
 static int pid_deriv;
+
+static bool racourci = false;
+static bool priorite = false;
 
 Timer pid_timer;
 //Ticker pid_tick;
@@ -34,6 +43,18 @@ namespace PID {
             l3 = LIR::lir3, l4 = LIR::lir4, 
             l5 = LIR::lir5, l6 = LIR::lir6,
             l7 = LIR::lir7, l8 = LIR::lir8;
+/*
+            if (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
+                balise_commence = true;
+            }
+
+            if (balise_commence && !l8) {
+                racourci = true;
+            }
+
+             if (l1 && (l6 || l5 || l4 || l3) && !( l8 || l7)) {
+                priorite = true;
+            }*/
 
 #ifdef DEBUG
         printf("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8);

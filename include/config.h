@@ -14,7 +14,7 @@
 #define ECHO D1
 #define TRIG D0
 
-#define LIR1 A7 // LED INFRA ROURGE
+#define LIR1 D9  // LED INFRA ROURGE
 #define LIR2 D10
 #define LIR3 A6
 #define LIR4 A0
@@ -37,5 +37,6 @@ using usecf = std::chrono::duration<float, std::micro>;
 using useci = std::chrono::duration<int, std::micro>;
 
 #define PISTE_BLANCHE true
+
 
 #endif

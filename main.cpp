@@ -1,11 +1,11 @@
 #include "mbed.h"
-#include "include/config.h"
 #include "include/sonore.h"
 #include "include/pont.h"
-#include "include/lir.h"
 #include "include/pid.h"
+#include "include/lir.h"
 
 static void init() {
+    LIR::init();
     Sonore::init();
     H::init();
     PID::init();
