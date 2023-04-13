@@ -3,8 +3,7 @@
 #include "include/pid.h"
 #include "include/pont.h"
 #include "include/lir.h"
-
-//#define DEBUG
+#include "include/debug.h"
 
 const float PID_Max_Out = 2.0f;
 const float PID_Min_Out = -2.0f;
@@ -56,9 +55,7 @@ namespace PID {
                 priorite = true;
             }*/
 
-#ifdef DEBUG
-        printf("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8);
-#endif
+        DEBUG::print("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8);
 
         // if ((l6 || l7 || l8) && (l3 || l2 || l1)) return 0;
         
@@ -71,9 +68,7 @@ namespace PID {
             }
         }
 
-#ifdef DEBUG
-        printf("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8);
-#endif 
+        DEBUG::print("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8); 
 
         if (l4 &&  l5) return 0;
 
@@ -94,9 +89,9 @@ namespace PID {
         if (pid_timer.elapsed_time() > PID_Sample_Rate) {
             int8_t error = pid_error();
 
-    #ifdef DEBUG
-            printf("error: %d\n\r", error);
-    #endif
+    
+            DEBUG::print("error: %d\n\r", error);
+    
             
             if (error > 4 ) {
                 pid_deriv = +1;

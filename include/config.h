@@ -38,5 +38,6 @@ using useci = std::chrono::duration<int, std::micro>;
 
 #define PISTE_BLANCHE true
 
+//#define DEBUG
 
 #endif

@@ -1,4 +1,3 @@
-
 #include <InterruptIn.h>
 #include <chrono>
 #include <cstdint>
@@ -6,17 +5,16 @@
 
 #include "include/config.h"
 #include "include/sonore.h"
+#include "include/debug.h"
 
 
 using namespace std;
 using namespace chrono;
 
 namespace Sonore {
-
     const usec SONORE_RESTART_INT = 60000us; 
     const usec TRIG_PULSE_DUR = 10us; 
     const usecf SOUND_SPEED = 0.034us;
-
 
     DigitalOut trig = DigitalOut(TRIG);
     InterruptIn echo(ECHO);
@@ -25,10 +23,9 @@ namespace Sonore {
     Timer trig_timer;
     Timer trig_repeat_timer;
 
-
     static void gen_trig_pulse() {
         trig = 1;
-        //printf("trig\n\r");
+        DEBUG::print("trig\n\r");
         trig_timer.start();
     }
 
@@ -37,20 +34,18 @@ namespace Sonore {
 
         if (trig_timer.elapsed_time() >= TRIG_PULSE_DUR) {
             trig = 0;
-            //printf("fin_trig\n\r");
+            DEBUG::print("fin_trig\n\r");
             trig_timer.stop();
         }
     }
 
     static void on_echo_rise() {
         echo_timer.start();
-        // printf("rise\n\r");
         // led = 1;
     }
 
     static void on_echo_fall() {
         echo_timer.stop();
-        //printf("fall\n\r");
         //led = 0;
         echo_pulse_dur = echo_timer.elapsed_time();
     }
@@ -75,6 +70,7 @@ namespace Sonore {
 
     void init() {
         trig_repeat_timer.start();
+        run_sonore();
     
         echo.rise(&on_echo_rise);
         echo.fall(&on_echo_fall);

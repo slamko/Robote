@@ -1,5 +1,5 @@
 
-#define KP 0.20f // 0.22
+#define KP 0.22f // 0.22
 #define KI 0.0f
 #define KD 0.90f // 1.0
 
