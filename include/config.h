@@ -35,9 +35,9 @@
 using usec = std::chrono::microseconds;
 using usecf = std::chrono::duration<float, std::micro>;
 using useci = std::chrono::duration<int, std::micro>;
+using nanoi = std::chrono::duration<int, std::nano>;
 
 #define PISTE_BLANCHE true
 
-//#define DEBUG
 
 #endif

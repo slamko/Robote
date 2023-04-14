@@ -3,17 +3,18 @@
 #include "include/config.h"
 
 
-static const int PWM_PERIOD = useci(100).count();
-
-static PwmOut ena(ENA);
-static PwmOut enb(ENB);
-static DigitalOut in1(IN1);
-static DigitalOut in2(IN2);
-static DigitalOut in3(IN3);
-static DigitalOut in4(IN4);
-
-
 namespace H {
+    static const int PWM_PERIOD = useci(100).count();
+    static const useci ARRET_TIME = useci(30000).count();
+
+    static PwmOut ena(ENA);
+    static PwmOut enb(ENB);
+    static DigitalOut in1(IN1);
+    static DigitalOut in2(IN2);
+    static DigitalOut in3(IN3);
+    static DigitalOut in4(IN4);
+
+    bool arret;
 
     float moteur_droit(float val) {
         ena.write(val);
@@ -38,6 +39,29 @@ namespace H {
     void moteur_gauche_arriere() {
         in3 = 0;
         in4 = 1;
+    }
+
+    void arret_motors() {
+        in1 = 0;
+        in2 = 0;
+        in3 = 0;
+        in4 = 0;
+        H::moteur_droit(0.0f);
+        H::moteur_gauche(0.0f);
+    }
+
+    void arreter() {
+        if (!arret) {
+            moteur_droit_arriere();
+            moteur_gauche_arriere();
+            H::moteur_droit(1.0f);
+            H::moteur_gauche(1.0f);
+
+            wait_us(ARRET_TIME);
+        }
+
+        arret_motors();
+        arret = true;
     }
 
     void moteur_gauche_avant() {

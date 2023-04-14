@@ -9,7 +9,9 @@ namespace Sonore {
 
     void init();
 
-    float get_obstacle_dist(usec pulse_dur);
+    float get_obstacle_dist();
+
+    bool obstacle_present();
 }
 
 #endif

@@ -1,32 +1,31 @@
 #include "mbed.h"
 #include <stdarg.h>
 #include <stdlib.h>
+#include "include/debug.h"
+#include "include/config.h"
 
 namespace DEBUG {
-    static EventQueue queue(4 * EVENTS_EVENT_SIZE);\
-    static Thread debug_t;
+    
+
+    #ifdef DEBUG_MODE
 
     void print(const char *msg, ...) {
-        #ifdef DEBUG_MODE
-
         va_list args;
         va_start(args, msg);
-
-        vfprintf(msg);
+        vprintf(msg, args);
         va_end(args);
-
-        #endif
     }
 
-    void nb_print(const char *msg) {
-        #ifdef DEBUG_MODE
+    #else 
 
-        queue.call(&print, msg);
-        
-        #endif
+    void print(const char *msg, ...) {}
+
+
+    void nb_print(const char *msg) {
+       
     }
 
     void init() {
-        debug_t.start(callback(&queue, &EventQueue::dispatch_forever));
     }
+    #endif
 }
