@@ -2,10 +2,9 @@
 #include "include/pont.h"
 #include "include/config.h"
 
-
 namespace H {
     static const int PWM_PERIOD = useci(100).count();
-    static const useci ARRET_TIME = useci(30000).count();
+    static const int ARRET_TIME = useci(30000).count();
 
     static PwmOut ena(ENA);
     static PwmOut enb(ENB);

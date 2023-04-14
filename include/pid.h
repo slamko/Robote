@@ -3,7 +3,7 @@
 #define KI 0.0f
 #define KD 0.90f // 1.0
 
-#define KP_SP 0.16f // 0.16
+#define KP_SP 0.18f // 0.16
 #define KI_SP 0.0f
 #define KD_SP 0.75f // 0.75
 

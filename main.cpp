@@ -1,14 +1,16 @@
 #include "mbed.h"
 #include "include/sonore.h"
 #include "include/pont.h"
-#include "include/pid.h"
+#include "include/move.h"
+#include "include/debug.h"
 #include "include/lir.h"
 
 static void init() {
     LIR::init();
     Sonore::init();
     H::init();
-    PID::init();
+    Move::init();
+    DEBUG::init();
 }
 
 int main()
@@ -17,6 +19,6 @@ int main()
 
     while (1) {
         Sonore::control();
-        PID::calcul();               
+        Move::control();               
     }
 }
