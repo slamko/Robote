@@ -7,6 +7,7 @@
 #include "include/config.h"
 #include "include/sonore.h"
 #include "include/debug.h"
+#include "include/outils.h"
 
 
 using namespace std;
@@ -16,6 +17,7 @@ namespace Sonore {
     const usec SONORE_RESTART_INT = 60000us; 
     const usec TRIG_PULSE_DUR = 10us; 
     const usecf SOUND_SPEED = 0.034us;
+    const float OBSTACLE_DETECT_DIST = 50.0f;
     
     bool echo_rise_act {false};
     bool echo_fall_act {false};
@@ -84,13 +86,14 @@ namespace Sonore {
         }
     }
 
+    bool obstacle_detected() {
+        return distance < OBSTACLE_DETECT_DIST;
+    }
+
     void run_sonore() {
         gen_trig_pulse();
     }
 
-    bool obstacle_present() {
-        return distance > 100.0f;
-    }
 
     void init() {
         trig_repeat_timer.start();

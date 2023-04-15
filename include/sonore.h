@@ -1,5 +1,6 @@
-#ifndef R_SONORE 
-#define R_SONORE 
+#ifndef SONORE_H
+#define SONORE_H
+
 #include "config.h"
 
 namespace Sonore {
@@ -11,7 +12,7 @@ namespace Sonore {
 
     float get_obstacle_dist();
 
-    bool obstacle_present();
+    bool obstacle_detected();
 }
 
 #endif

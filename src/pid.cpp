@@ -23,7 +23,6 @@ static bool balise_gauche = false;
 static bool balise_droite = false;
 
 Timer sonore_run_timer;
-//Ticker pid_tick;
 
 namespace PID {
 
@@ -32,26 +31,6 @@ namespace PID {
             out = PID_Min_Out;
         } else if (out >= PID_Max_Out) {
             out = PID_Max_Out;
-        }
-    }
-
-    static void verif_arrivee() {
-        const int 
-            l1 = LIR::lir1, l2 = LIR::lir2, 
-            l3 = LIR::lir3, l4 = LIR::lir4, 
-            l5 = LIR::lir5, l6 = LIR::lir6,
-            l7 = LIR::lir7, l8 = LIR::lir8;
-
-        if ((l6 + l7 + l8 + l5 + l3 + l2 + l1 + l4) >= 6)  {
-            v_arrivee = true;
-        }
-
-        if ((!l6 && !l7 && !l8 && !l5 && !l3 && !l2 && !l1 && !l4) && v_arrivee)  {
-            
-        }
-
-        if(arrivee) {
-            H::arrivee();
         }
     }
 

@@ -32,11 +32,6 @@
 
 #define LED D13
 
-using usec = std::chrono::microseconds;
-using usecf = std::chrono::duration<float, std::micro>;
-using useci = std::chrono::duration<unsigned int, std::micro>;
-using nanoi = std::chrono::duration<unsigned int, std::nano>;
-
 #define PISTE_BLANCHE true
 
 #endif

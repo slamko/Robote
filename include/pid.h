@@ -1,3 +1,5 @@
+#ifndef PID_H
+#define PID_H
 
 #define KP 0.22f // 0.22
 #define KI 0.0f
@@ -14,3 +16,4 @@ namespace PID {
     void init();
 
 }
+#endif

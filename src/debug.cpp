@@ -5,7 +5,6 @@
 #include "include/config.h"
 
 namespace DEBUG {
-    
 
     #ifdef DEBUG_MODE
 
@@ -20,6 +19,7 @@ namespace DEBUG {
 
     void print(const char *msg, ...) {}
 
+    #endif
 
     void nb_print(const char *msg) {
        
@@ -27,5 +27,4 @@ namespace DEBUG {
 
     void init() {
     }
-    #endif
 }
