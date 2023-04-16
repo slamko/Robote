@@ -12,12 +12,60 @@ namespace LIR {
 
     static constexpr PisteType piste = PisteType::Blanche;
 
+    bool inverse_read();
+
+    template <class Capteur, class Data>
+    class input {
+    public:
+        input(PinName pin);
+        
+        virtual Data read() = 0;
+
+        Data read_cached() {
+            return data;
+        }
+
+    protected:
+        Capteur capteur;
+        Data data;
+    };
+
+    class Analog : public input<AnalogIn, float> {
+        public:
+            Analog(PinName pin);
+
+            float read() override {
+                if (inverse_read()) {
+                    data = (1.0f - capteur.read());
+                } else {
+                    data = capteur.read();
+                }
+
+                return data;
+            }
+    };
+
+    class Digital : public input<DigitalIn, int> {
+        public:
+            Digital(PinName pin);
+
+            int read() override {
+                if (inverse_read()) {
+                    data = !capteur.read();
+                } else {
+                    data = capteur.read();
+                }
+
+                return data;
+            }
+    };
+
     template <class T>
     class lir {
     public:
         lir(PinName pin);
         
-        template<class Ret>
+        template <class Ret>
         Ret read();
 
         template<class Ret>
@@ -26,47 +74,41 @@ namespace LIR {
         T capteur;
     };
 
-    bool inverse_read();
+    struct lirArray {
+        Digital lir1;
+        Digital lir2;
+        Digital lir3;
+        Digital lir4;
+        Digital lir5;
+        Digital lir6;
+        Digital lir7;
+        Digital lir8;
+
+        void read();
+    };
+
     void init(bool inverse = piste);
 
-    template <>
+    template <class In>
     template <class Ret>
-    Ret lir<mbed::DigitalIn>::read() {
-        if (inverse_read()) {
-            return static_cast<Ret>(!capteur.read());
-        }
-        return static_cast<Ret>(capteur.read());
+    Ret lir<In>::read() {
+        return capteur.read();
     }
 
-    template <>
+    template <class In>
     template <class Ret>
-    Ret lir<mbed::AnalogIn>::read() {
-        if (inverse_read()) {
-            return static_cast<Ret>(1.0f - capteur.read());
-        }
-        return static_cast<Ret>(capteur.read());
+    lir<In>::operator Ret() {
+        return capteur.read_cached();
     }
 
-    template <>
-    template <class Ret>
-    lir<mbed::DigitalIn>::operator Ret() {
-        return read<Ret>();
-    }
-
-    template <>
-    template <class Ret>
-    lir<mbed::AnalogIn>::operator Ret() {
-        return read<Ret>();
-    }
-
-    extern lir<DigitalIn> lir1;
-    extern lir<DigitalIn> lir2;
-    extern lir<DigitalIn> lir3;
-    extern lir<DigitalIn> lir4;
-    extern lir<DigitalIn> lir5;
-    extern lir<DigitalIn> lir6;
-    extern lir<DigitalIn> lir7;
-    extern lir<DigitalIn> lir8;
+    extern lir<Digital> lir1;
+    extern lir<Digital> lir2;
+    extern lir<Digital> lir3;
+    extern lir<Digital> lir4;
+    extern lir<Digital> lir5;
+    extern lir<Digital> lir6;
+    extern lir<Digital> lir7;
+    extern lir<Digital> lir8;
 }
 
 #endif

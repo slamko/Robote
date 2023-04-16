@@ -42,7 +42,7 @@ namespace Sonore {
     static void check_trig_pulse() {
         if (!trig) return;
 
-        if (trig_timer.elapsed_time() >= TRIG_PULSE_DUR) {
+        if (Outil::at_time(trig_timer, TRIG_PULSE_DUR)) {
             trig = 0;
            // DEBUG::print("fin_trig\n\r");
             trig_timer.stop();
@@ -80,7 +80,7 @@ namespace Sonore {
             echo_fall_act = false;
         }
 
-        if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
+        if (Outil::at_time(trig_repeat_timer, SONORE_RESTART_INT)) {
             trig_repeat_timer.reset();
             gen_trig_pulse();
         }
@@ -93,7 +93,6 @@ namespace Sonore {
     void run_sonore() {
         gen_trig_pulse();
     }
-
 
     void init() {
         trig_repeat_timer.start();

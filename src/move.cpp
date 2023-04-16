@@ -21,6 +21,7 @@ namespace Move {
     bool arrivee;
     bool arret;
 
+/*
     static void verif_arrivee() {
         const int 
             l1 = LIR::lir1, l2 = LIR::lir2, 
@@ -40,9 +41,16 @@ namespace Move {
             H::arreter();
         }
     }
+*/
 
     void control() {
-        if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
+        const int 
+            l1 = LIR::lir1.read<int>(), l2 = LIR::lir2, 
+            l3 = LIR::lir3, l4 = LIR::lir4, 
+            l5 = LIR::lir5, l6 = LIR::lir6,
+            l7 = LIR::lir7, l8 = LIR::lir8;
+
+        if (Outil::at_time(pid_timer, PID_Sample_Rate)) return;
 
         if (priorite) {
             if (Sonore::obstacle_detected()) {
