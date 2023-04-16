@@ -43,8 +43,6 @@ namespace LIR {
         lir8.read();
     }
 
-    
-
     static bool _inverse { piste };
     
     bool inverse_read() {
@@ -55,12 +53,14 @@ namespace LIR {
         _inverse = inverse;
     }
 
-    lir<Digital> lir1{LIR1};
-    lir<Digital> lir2{LIR2};
-    lir<Digital> lir3{LIR3};
-    lir<Digital> lir4{LIR4};
-    lir<Digital> lir5{LIR5};
-    lir<Digital> lir6{LIR6};
-    lir<Digital> lir7{LIR7};
-    lir<Digital> lir8{LIR8};
+    Digital lirArray::lir1{LIR1};
+    Digital lirArray::lir2{LIR2};
+    Digital lirArray::lir3{LIR3};
+    Digital lirArray::lir4{LIR4};
+    Digital lirArray::lir5{LIR5};
+    Digital lirArray::lir6{LIR6};
+    Digital lirArray::lir7{LIR7};
+    Digital lirArray::lir8{LIR8};
+
+    lirArray array = lirArray();
 }

@@ -25,6 +25,10 @@ namespace LIR {
             return data;
         }
 
+        operator Data() {
+            return read_cached();
+        }
+
     protected:
         Capteur capteur;
         Data data;
@@ -75,14 +79,14 @@ namespace LIR {
     };
 
     struct lirArray {
-        Digital lir1;
-        Digital lir2;
-        Digital lir3;
-        Digital lir4;
-        Digital lir5;
-        Digital lir6;
-        Digital lir7;
-        Digital lir8;
+        static Digital lir1;
+        static Digital lir2;
+        static Digital lir3;
+        static Digital lir4;
+        static Digital lir5;
+        static Digital lir6;
+        static Digital lir7;
+        static Digital lir8;
 
         void read();
     };
@@ -101,14 +105,7 @@ namespace LIR {
         return capteur.read_cached();
     }
 
-    extern lir<Digital> lir1;
-    extern lir<Digital> lir2;
-    extern lir<Digital> lir3;
-    extern lir<Digital> lir4;
-    extern lir<Digital> lir5;
-    extern lir<Digital> lir6;
-    extern lir<Digital> lir7;
-    extern lir<Digital> lir8;
+    extern lirArray array;
 }
 
 #endif
