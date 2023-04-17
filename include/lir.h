@@ -14,13 +14,16 @@ namespace LIR {
 
     bool inverse_read();
 
+    class input_read {
+        public:
+            virtual void read() = 0;
+    };
+
     template <class Capteur, class Data>
     class input {
     public:
         input(PinName pin);
         
-        virtual Data read() = 0;
-
         Data read_cached() {
             return data;
         }
@@ -34,34 +37,17 @@ namespace LIR {
         Data data;
     };
 
-    class Analog : public input<AnalogIn, float> {
+    class Analog : public input<AnalogIn, float>, public input_read {
         public:
             Analog(PinName pin);
-
-            float read() override {
-                if (inverse_read()) {
-                    data = (1.0f - capteur.read());
-                } else {
-                    data = capteur.read();
-                }
-
-                return data;
-            }
+            void read() override;
     };
 
-    class Digital : public input<DigitalIn, int> {
+    class Digital : public input<DigitalIn, int>, public input_read {
         public:
             Digital(PinName pin);
 
-            int read() override {
-                if (inverse_read()) {
-                    data = !capteur.read();
-                } else {
-                    data = capteur.read();
-                }
-
-                return data;
-            }
+            void read() override;
     };
 
     template <class T>
@@ -79,15 +65,7 @@ namespace LIR {
     };
 
     struct lirArray {
-        static Digital lir1;
-        static Digital lir2;
-        static Digital lir3;
-        static Digital lir4;
-        static Digital lir5;
-        static Digital lir6;
-        static Digital lir7;
-        static Digital lir8;
-
+        static input_read *lir[8];
         void read();
     };
 

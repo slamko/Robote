@@ -3,6 +3,17 @@
 #include "include/lir.h"
 
 namespace LIR {
+
+    static bool inverse { piste };
+
+    bool inverse_read() {
+        return inverse;
+    }
+
+    void init(bool inv) {
+        inverse = inv;
+    }
+
     template <class T>
     lir<T>::lir(PinName pin) : capteur(pin) {}
 
@@ -11,7 +22,23 @@ namespace LIR {
 
     Analog::Analog(PinName pin) : input(pin) {}
 
+    void Analog::read() {
+        if (LIR::inverse_read()) {
+            data = (1.0f - capteur.read());
+        } else {
+            data = capteur.read();
+        }
+    }
+
     Digital::Digital(PinName pin) : input(pin) {}
+
+    void Digital::read() {
+        if (LIR::inverse_read()) {
+            data = !capteur.read();
+        } else {
+            data = capteur.read();
+        }
+    }
 /*
     template <class Capteur, class Ret>
     lirArray<Capteur, Ret>::lirArray(Capteur lir1, Capteur lir2, Capteur lir3, Capteur lir4,
@@ -33,34 +60,30 @@ namespace LIR {
 */
 
     void lirArray::read() {
-        lir1.read();
-        lir2.read();
-        lir3.read();
-        lir4.read();
-        lir5.read();
-        lir6.read();
-        lir7.read();
-        lir8.read();
+        for(auto capteur : lir) {
+            capteur->read();
+        }
     }
 
-    static bool _inverse { piste };
-    
-    bool inverse_read() {
-        return _inverse;
-    }
+    static Digital lir1{LIR1};
+    static Digital lir2{LIR2};
+    static Digital lir3{LIR3};
+    static Digital lir4{LIR4};
+    static Digital lir5{LIR5};
+    static Digital lir6{LIR6};
+    static Digital lir7{LIR7};
+    static Digital lir8{LIR8};
 
-    void init(bool inverse) {
-        _inverse = inverse;
-    }
-
-    Digital lirArray::lir1{LIR1};
-    Digital lirArray::lir2{LIR2};
-    Digital lirArray::lir3{LIR3};
-    Digital lirArray::lir4{LIR4};
-    Digital lirArray::lir5{LIR5};
-    Digital lirArray::lir6{LIR6};
-    Digital lirArray::lir7{LIR7};
-    Digital lirArray::lir8{LIR8};
+    input_read *lirArray::lir[8] = {
+        &lir1,
+        &lir2,
+        &lir3,
+        &lir4,
+        &lir5,
+        &lir6,
+        &lir7,
+        &lir8
+    };
 
     lirArray array = lirArray();
 }
