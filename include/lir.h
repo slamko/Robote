@@ -43,25 +43,11 @@ namespace LIR {
             void read() override;
     };
 
+
     class Digital : public input<DigitalIn, int>, public input_read {
         public:
             Digital(PinName pin);
-
             void read() override;
-    };
-
-    template <class T>
-    class lir {
-    public:
-        lir(PinName pin);
-        
-        template <class Ret>
-        Ret read();
-
-        template<class Ret>
-        operator Ret();
-    private:
-        T capteur;
     };
 
     struct lirArray {
@@ -71,17 +57,14 @@ namespace LIR {
 
     void init(bool inverse = piste);
 
-    template <class In>
-    template <class Ret>
-    Ret lir<In>::read() {
-        return capteur.read();
-    }
-
-    template <class In>
-    template <class Ret>
-    lir<In>::operator Ret() {
-        return capteur.read_cached();
-    }
+    extern Digital lir1;
+    extern Digital lir2;
+    extern Digital lir3;
+    extern Digital lir4;
+    extern Digital lir5;
+    extern Digital lir6;
+    extern Digital lir7;
+    extern Digital lir8;
 
     extern lirArray array;
 }

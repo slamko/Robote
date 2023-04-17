@@ -47,10 +47,10 @@ namespace Move {
         LIR::array.read();
 
         const int 
-            l1 = *LIR::array.lir[0], l2 = *LIR::array.lir[1], 
-            l3 = *LIR::array.lir[2], l4 = *LIR::array.lir[3], 
-            l5 = *LIR::array.lir[4], l6 = *LIR::array.lir[5],
-            l7 = *LIR::array.lir[6], l8 = *LIR::array.lir[7];
+            l1 = LIR::lir1, l2 = LIR::lir2, 
+            l3 = LIR::lir3, l4 = LIR::lir4, 
+            l5 = LIR::lir5, l6 = LIR::lir6,
+            l7 = LIR::lir7, l8 = LIR::lir8;
 
         if (Outil::at_time(pid_timer, PID_Sample_Rate)) return;
 
