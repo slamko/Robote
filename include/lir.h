@@ -20,7 +20,7 @@ namespace LIR {
     };
 
     template <class Capteur, class Data>
-    class input {
+    class input : public input_read  {
     public:
         input(PinName pin);
         
@@ -37,22 +37,25 @@ namespace LIR {
         Data data;
     };
 
-    class Analog : public input<AnalogIn, float>, public input_read {
+    class Analog : public input<AnalogIn, float>{
         public:
-            Analog(PinName pin);
+            using input::input;
             void read() override;
     };
 
 
-    class Digital : public input<DigitalIn, int>, public input_read {
+    class Digital : public input<DigitalIn, int> {
         public:
-            Digital(PinName pin);
+            using input::input;
             void read() override;
     };
 
     struct lirArray {
+        lirArray() = delete;
+        static void read();
+
+    private:
         static input_read *lir[8];
-        void read();
     };
 
     void init(bool inverse = piste);
@@ -65,8 +68,6 @@ namespace LIR {
     extern Digital lir6;
     extern Digital lir7;
     extern Digital lir8;
-
-    extern lirArray array;
 }
 
 #endif

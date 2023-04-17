@@ -15,9 +15,7 @@ namespace LIR {
     }
 
     template <class Capteur, class Data>
-    input<Capteur, Data>::input(PinName pin) : capteur(pin) {}
-
-    Analog::Analog(PinName pin) : input(pin) {}
+    input<Capteur, Data>::input(PinName pin) : capteur(pin), data{} {}
 
     void Analog::read() {
         if (LIR::inverse_read()) {
@@ -26,8 +24,6 @@ namespace LIR {
             data = capteur.read();
         }
     }
-
-    Digital::Digital(PinName pin) : input(pin) {}
 
     void Digital::read() {
         if (LIR::inverse_read()) {
@@ -43,15 +39,6 @@ namespace LIR {
         }
     }
 
-    Digital lir1{LIR1};
-    Digital lir2{LIR2};
-    Digital lir3{LIR3};
-    Digital lir4{LIR4};
-    Digital lir5{LIR5};
-    Digital lir6{LIR6};
-    Digital lir7{LIR7};
-    Digital lir8{LIR8};
-
     input_read *lirArray::lir[8] = {
         &lir1,
         &lir2,
@@ -63,5 +50,12 @@ namespace LIR {
         &lir8
     };
 
-    lirArray array = lirArray();
+    Digital lir1{LIR1};
+    Digital lir2{LIR2};
+    Digital lir3{LIR3};
+    Digital lir4{LIR4};
+    Digital lir5{LIR5};
+    Digital lir6{LIR6};
+    Digital lir7{LIR7};
+    Digital lir8{LIR8};
 }

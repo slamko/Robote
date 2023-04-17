@@ -44,8 +44,8 @@ namespace Move {
 */
 
     void control() {
-        LIR::array.read();
-
+        LIR::lirArray::read();
+        
         const int 
             l1 = LIR::lir1, l2 = LIR::lir2, 
             l3 = LIR::lir3, l4 = LIR::lir4, 
