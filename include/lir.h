@@ -32,6 +32,9 @@ namespace LIR {
             return read_cached();
         }
 
+        input(const input&) = delete;
+        input& operator =(const input&) = delete;
+
     protected:
         Capteur capteur;
         Data data;
@@ -50,13 +53,13 @@ namespace LIR {
             void read() override;
     };
 
-    struct lirArray {
-        lirArray() = delete;
-        static void read();
+    void read();
 
-    private:
-        static input_read *lir[8];
-    };
+    bool nul();
+
+    bool tout();
+
+    bool un();
 
     void init(bool inverse = piste);
 

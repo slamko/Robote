@@ -33,13 +33,8 @@ namespace LIR {
         }
     }
 
-    void lirArray::read() {
-        for(auto capteur : lir) {
-            capteur->read();
-        }
-    }
 
-    input_read *lirArray::lir[8] = {
+    static input_read *lir[8] = {
         &lir1,
         &lir2,
         &lir3,
@@ -49,6 +44,24 @@ namespace LIR {
         &lir7,
         &lir8
     };
+
+    void read() {
+        for(auto capteur : lir) {
+            capteur->read();
+        }
+    }
+
+    bool nul() {
+        return (!lir1 && !lir2 && !lir3 && !lir4 && !lir5 && !lir6 && !lir7 && !lir8);
+    }
+
+    bool tout() {
+        return (lir1 && lir2 && lir3 && lir4 && lir5 && lir6 && lir7 && lir8);
+    }
+
+    bool un() {
+        return (lir1 || lir2 || lir3 || lir4 || lir5 || lir6 || lir7 || lir8);
+    }
 
     Digital lir1{LIR1};
     Digital lir2{LIR2};

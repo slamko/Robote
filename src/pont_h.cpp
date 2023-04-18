@@ -14,7 +14,7 @@ namespace H {
     static DigitalOut in3(IN3);
     static DigitalOut in4(IN4);
 
-    bool arret;
+    bool en_arret;
 
     float moteur_droit(float val) {
         ena.write(val);
@@ -24,6 +24,11 @@ namespace H {
     float moteur_gauche(float val) {
         enb.write(val);
         return val;
+    }
+
+    void moteurs(float val) {
+        moteur_droit(val);
+        moteur_gauche(val);
     }
 
     void moteur_droit_arriere() {
@@ -50,18 +55,17 @@ namespace H {
         H::moteur_gauche(0.0f);
     }
 
-    void arreter() {
-        if (!arret) {
+    void arret() {
+        if (!en_arret) {
             moteur_droit_arriere();
             moteur_gauche_arriere();
-            H::moteur_droit(1.0f);
-            H::moteur_gauche(1.0f);
+            moteurs(1.0f);
 
             wait_us(ARRET_TIME);
         }
 
         arret_motors();
-        arret = true;
+        en_arret = true;
     }
 
     void moteur_gauche_avant() {

@@ -1,6 +1,5 @@
-#include "include/move.h"
-
 #include "mbed.h"
+#include <InterruptIn.h>
 #include "include/config.h"
 #include "include/outils.h"
 #include "include/move.h"
@@ -8,6 +7,7 @@
 #include "include/pid.h"
 #include "include/sonore.h"
 #include "include/pont.h"
+#include "include/events.h"
 
 namespace Move {
     #ifdef DEBUG_MODE
@@ -16,9 +16,12 @@ namespace Move {
     const usec PID_Sample_Rate = 1000us; 
     #endif
 
-    Timer pid_timer;
+    static Timer pid_timer;
+    static InterruptIn arrivee_in{ARRIVEE, PullUp};
+
     bool priorite;
     bool arrivee;
+    bool arrivee_decl;
     bool arret;
 
 /*
@@ -42,29 +45,50 @@ namespace Move {
         }
     }
 */
+    static void check_priorite() {
+        if (priorite) {
+            if (Sonore::obstacle_detected()) {
+                arret = true;
+
+                H::arret();
+            } else {
+                priorite = false;
+            }
+        }
+    }
+
+    static void arrivee_control() {
+        if (!arrive) return;
+
+        if (LIR::un()) {
+            arrivee = false;
+        }
+    }
 
     void control() {
-        LIR::lirArray::read();
-        
+        if (!Outil::at_time(pid_timer, PID_Sample_Rate)) return;
+
+        LIR::read();
+
         const int 
             l1 = LIR::lir1, l2 = LIR::lir2, 
             l3 = LIR::lir3, l4 = LIR::lir4, 
             l5 = LIR::lir5, l6 = LIR::lir6,
             l7 = LIR::lir7, l8 = LIR::lir8;
+        
+        arrivee_control();
 
-        if (Outil::at_time(pid_timer, PID_Sample_Rate)) return;
-
-        if (priorite) {
-            if (Sonore::obstacle_detected()) {
-                arret = true;
-
-                H::arreter();
-            } else {
-                priorite = false;
-            }
+        if (!arrivee) {
+            PID::calcul();
         }
+    }
 
-        PID::calcul();
+    static void init_arrivee_int() {
+        arrivee_in.mode(PullUp);
+        arrivee_in.fall([]() {
+            arrivee = true;
+            Events::call(&H::arret());
+        });
     }
 
     void init() {
