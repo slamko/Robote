@@ -4,15 +4,15 @@
 #include "include/outils.h"
 
 namespace H {
-    static const int PWM_PERIOD = useci(100).count();
-    static const int ARRET_TIME = useci(30000).count();
+    static const int PWM_PERIOD = useci{100}.count();
+    static const int ARRET_TIME = useci{30000}.count();
 
-    static PwmOut ena(ENA);
-    static PwmOut enb(ENB);
-    static DigitalOut in1(IN1);
-    static DigitalOut in2(IN2);
-    static DigitalOut in3(IN3);
-    static DigitalOut in4(IN4);
+    static PwmOut ena {ENA};
+    static PwmOut enb {ENB};
+    static DigitalOut in1 {IN1};
+    static DigitalOut in2 {IN2};
+    static DigitalOut in3 {IN3};
+    static DigitalOut in4 {IN4};
 
     bool en_arret;
 

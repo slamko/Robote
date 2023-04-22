@@ -33,16 +33,15 @@ namespace LIR {
         }
     }
 
-
     static input_read *lir[8] = {
-        &lir1,
-        &lir2,
-        &lir3,
-        &lir4,
-        &lir5,
-        &lir6,
-        &lir7,
-        &lir8
+        &l1,
+        &l2,
+        &l3,
+        &l4,
+        &l5,
+        &l6,
+        &l7,
+        &l8
     };
 
     void read() {
@@ -52,23 +51,23 @@ namespace LIR {
     }
 
     bool nul() {
-        return (!lir1 && !lir2 && !lir3 && !lir4 && !lir5 && !lir6 && !lir7 && !lir8);
+        return (!l1 && !l2 && !l3 && !l4 && !l5 && !l6 && !l7 && !l8);
     }
 
     bool tout() {
-        return (lir1 && lir2 && lir3 && lir4 && lir5 && lir6 && lir7 && lir8);
+        return (l1 && l2 && l3 && l4 && l5 && l6 && l7 && l8);
     }
 
     bool un() {
-        return (lir1 || lir2 || lir3 || lir4 || lir5 || lir6 || lir7 || lir8);
+        return (l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8);
     }
 
-    Digital lir1{LIR1};
-    Digital lir2{LIR2};
-    Digital lir3{LIR3};
-    Digital lir4{LIR4};
-    Digital lir5{LIR5};
-    Digital lir6{LIR6};
-    Digital lir7{LIR7};
-    Digital lir8{LIR8};
+    Digital l1{LIR1};
+    Digital l2{LIR2};
+    Digital l3{LIR3};
+    Digital l4{LIR4};
+    Digital l5{LIR5};
+    Digital l6{LIR6};
+    Digital l7{LIR7};
+    Digital l8{LIR8};
 }

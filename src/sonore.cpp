@@ -1,14 +1,9 @@
 #include <InterruptIn.h>
-#include <chrono>
-#include <cstdint>
-#include <cstdio>
-#include <ratio>
 
 #include "include/config.h"
 #include "include/sonore.h"
 #include "include/debug.h"
 #include "include/outils.h"
-
 
 using namespace std;
 using namespace chrono;
@@ -22,12 +17,12 @@ namespace Sonore {
     bool echo_rise_act {false};
     bool echo_fall_act {false};
 
-    DigitalOut led(LED);
+    DigitalOut led {LED};
 
-    DigitalOut trig = DigitalOut(TRIG);
-    InterruptIn echo(ECHO);
+    DigitalOut trig {TRIG};
+    InterruptIn echo {ECHO};
     usec echo_pulse_dur;
-    float distance;
+    float distance = OBSTACLE_DETECT_DIST + 1.0f;
     Timer echo_timer;
     Timer trig_timer;
     Timer trig_repeat_timer;
@@ -42,7 +37,7 @@ namespace Sonore {
     static void check_trig_pulse() {
         if (!trig) return;
 
-        if (Outil::at_time(trig_timer, TRIG_PULSE_DUR)) {
+        if (trig_timer.elapsed_time() > TRIG_PULSE_DUR) {
             trig = 0;
            // DEBUG::print("fin_trig\n\r");
             trig_timer.stop();
@@ -52,35 +47,26 @@ namespace Sonore {
     static void on_echo_rise() {
         echo_timer.reset();
         echo_timer.start();
-        echo_rise_act = true;
+        
+        DEBUG::nb_print("echo rise\r\n");
     }
 
     static void on_echo_fall() {
         echo_timer.stop();
         echo_pulse_dur = echo_timer.elapsed_time();
-        echo_fall_act = true;
+        distance = get_obstacle_dist();
+
+        DEBUG::nb_print("echo fall\r\n");
     }
 
     float get_obstacle_dist() {
         return (SOUND_SPEED.count() * echo_pulse_dur.count()) / 2.0f;
-        //return echo_pulse_dur.count();
     }
     
     void control() {
         check_trig_pulse();
-        distance = get_obstacle_dist();
 
-        if (echo_rise_act) {
-           // DEBUG::print("rise\r\n");
-            echo_rise_act = false;
-        }
-
-        if (echo_fall_act) {
-           // DEBUG::print("fall\r\n");
-            echo_fall_act = false;
-        }
-
-        if (Outil::at_time(trig_repeat_timer, SONORE_RESTART_INT)) {
+        if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
             trig_repeat_timer.reset();
             gen_trig_pulse();
         }
@@ -94,13 +80,25 @@ namespace Sonore {
         gen_trig_pulse();
     }
 
-    void init() {
+    void start() {
+        trig_repeat_timer.reset();
         trig_repeat_timer.start();
-        run_sonore();
 
         echo.rise(&on_echo_rise);
         echo.fall(&on_echo_fall);
-        echo.mode(PullDown);
+
+        run_sonore();
     }
 
+    void stop() {
+        trig_repeat_timer.stop();
+        trig_repeat_timer.reset();
+
+        echo.rise(NULL);
+        echo.fall(NULL);
+    }
+
+    void init() {
+        echo.mode(PullDown);
+    }
 }

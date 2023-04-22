@@ -5,13 +5,13 @@
 
 namespace Sonore {
     void control();
-
     void run_sonore();
-
     void init();
 
-    float get_obstacle_dist();
+    void start();
+    void stop();
 
+    float get_obstacle_dist();
     bool obstacle_detected();
 }
 

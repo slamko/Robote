@@ -17,12 +17,14 @@ namespace Move {
     #endif
 
     static Timer pid_timer;
-    static InterruptIn arrivee_in{ARRIVEE, PullUp};
+    static InterruptIn arrivee_in {ARRIVEE, PullUp};
 
     bool priorite;
     bool arrivee;
     bool arrivee_decl;
     bool arret;
+    bool balise_gauche;
+    bool racourci;
 
 /*
     static void verif_arrivee() {
@@ -45,36 +47,67 @@ namespace Move {
         }
     }
 */
-    static void check_priorite() {
+    static bool croisement() {
+        using namespace LIR;
+        return (l2 && l3 && l6 && l7);
+    }
+
+    static void priorite_control() {
+        using namespace LIR;
+
+        if (l1 && (l6 || l5 || l4 || l3) && !l2 && !( l8 || l7)) {
+            priorite = true;
+            Sonore::start();
+        }
+
         if (priorite) {
+            Sonore::control();
+            
             if (Sonore::obstacle_detected()) {
                 arret = true;
-
                 H::arret();
-            } else {
+            }
+
+            if (croisement()) {
                 priorite = false;
+                Sonore::stop();
+            }
+
+            if (arret && !Sonore::obstacle_detected()) {
+                arret = false;
             }
         }
     }
 
+    static void racourci_control() {
+        using namespace LIR;
+
+        if (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
+            balise_gauche = true;
+        }
+
+        if (balise_gauche && !l8) {
+            racourci = true;
+        }
+    }
+
     static void arrivee_control() {
-        if (!arrive) return;
+        if (!arrivee) return;
 
         if (LIR::un()) {
             arrivee = false;
         }
+
+        if (arrivee_decl) {
+            H::arret();
+            arrivee_decl = false;
+        }
     }
 
     void control() {
-        if (!Outil::at_time(pid_timer, PID_Sample_Rate)) return;
+        if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
 
         LIR::read();
-
-        const int 
-            l1 = LIR::lir1, l2 = LIR::lir2, 
-            l3 = LIR::lir3, l4 = LIR::lir4, 
-            l5 = LIR::lir5, l6 = LIR::lir6,
-            l7 = LIR::lir7, l8 = LIR::lir8;
         
         arrivee_control();
 
@@ -87,12 +120,13 @@ namespace Move {
         arrivee_in.mode(PullUp);
         arrivee_in.fall([]() {
             arrivee = true;
-            Events::call(&H::arret());
+            arrivee_decl = true;
         });
     }
 
     void init() {
         pid_timer.start();
         PID::init();
+        init_arrivee_int();
     }
 }

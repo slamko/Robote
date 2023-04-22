@@ -35,30 +35,11 @@ namespace PID {
     }
 
     static int8_t pid_error() {
-        const int 
-            l1 = LIR::lir1, l2 = LIR::lir2, 
-            l3 = LIR::lir3, l4 = LIR::lir4, 
-            l5 = LIR::lir5, l6 = LIR::lir6,
-            l7 = LIR::lir7, l8 = LIR::lir8;
-            
-        if (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
-            balise_gauche = true;
-        }
+        using namespace LIR;
 
-        if (balise_gauche && !l8) {
-            racourci = true;
-        }
-
-        if (l1 && (l6 || l5 || l4 || l3) && !l2 && !( l8 || l7)) {
-            priorite = true;
-        }
+        DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8);
         
-
-        DEBUG::print("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8);
-  
-        // if ((l6 || l7 || l8) && (l3 || l2 || l1)) return 0;
-        
-        if (!l6 && !l7 && !l8 && !l5 && !l3 && !l2 && !l1 && !l4)  {
+        if (LIR::nul())  {
             if (prev_error > 0) {
                 return 5;
             }
@@ -67,9 +48,8 @@ namespace PID {
             }
         }
         
-        DEBUG::print("%d %d %d %d %d %d %d %d\n\r", l1, l2, l3, l4, l5, l6, l7, l8); 
+        DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8); 
         
-
         if (l4 &&  l5) return 0;
 
         if (l6 && !l7) return 1;
