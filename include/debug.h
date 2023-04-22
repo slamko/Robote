@@ -12,9 +12,18 @@ namespace DEBUG {
 
     template <class Msg>
     void fprint(Msg msg) {
-        printf(std::to_string(msg).c_str());
+        printf(msg);
         printf("\r\n");
     }
+
+    template <>
+    void fprint(int num);
+
+    template <>
+    void fprint(float num);
+
+    template <>
+    void fprint(double num);
 
     template <>
     void fprint(const char *msg);
@@ -24,7 +33,6 @@ namespace DEBUG {
         fprint(acc);
         fprint(sec, args...);
     } 
-
 
     template <class ...Args>
     void nb_print(const char *msg, Args ...args) {

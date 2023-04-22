@@ -21,6 +21,23 @@ namespace DEBUG {
         printf(msg);
     }
 
+
+    template <>
+    void fprint(int num) {
+        printf("%d ", num);
+    }
+
+    template <>
+    void fprint(float num) {
+        printf("%f ", num);
+    }
+
+    template <>
+    void fprint(double num) {
+        printf("%lf ", num);
+    }
+
+
     #else 
 
     void print(const char *msg, ...) {}

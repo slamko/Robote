@@ -8,7 +8,7 @@
 
 static void init() {
     LIR::init();
-    Sonore::init()
+    Sonore::init();
     H::init();
     Move::init();
     DEBUG::init();
