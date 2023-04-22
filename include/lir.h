@@ -63,14 +63,14 @@ namespace LIR {
 
     void init(bool inverse = piste);
 
-    extern Digital lir1;
-    extern Digital lir2;
-    extern Digital lir3;
-    extern Digital lir4;
-    extern Digital lir5;
-    extern Digital lir6;
-    extern Digital lir7;
-    extern Digital lir8;
+    extern Digital l1;
+    extern Digital l2;
+    extern Digital l3;
+    extern Digital l4;
+    extern Digital l5;
+    extern Digital l6;
+    extern Digital l7;
+    extern Digital l8;
 }
 
 #endif

@@ -34,5 +34,6 @@
 #define LED D13
 
 #define PISTE_BLANCHE true
+#define DEBUG_MODE
 
 #endif

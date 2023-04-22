@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "include/debug.h"
 #include "include/config.h"
+#include "include/events.h"
 
 namespace DEBUG {
 
@@ -15,15 +16,21 @@ namespace DEBUG {
         va_end(args);
     }
 
+    template <>
+    void fprint(const char *msg) {
+        printf(msg);
+    }
+
     #else 
 
     void print(const char *msg, ...) {}
 
+    template <>
+    void fprint(const char *msg) {}
+
     #endif
 
-    void nb_print(const char *msg) {
-       
-    }
+    
 
     void init() {
     }
