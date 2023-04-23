@@ -21,7 +21,6 @@ namespace Move {
 
     bool priorite;
     bool arrivee;
-    bool arrivee_decl;
     bool arret;
     bool balise_gauche;
     bool racourci;
@@ -47,10 +46,6 @@ namespace Move {
         }
     }
 */
-    static bool croisement() {
-        using namespace LIR;
-        return (l2 && l3 && l6 && l7);
-    }
 
     static void priorite_control() {
         using namespace LIR;
@@ -63,7 +58,7 @@ namespace Move {
         if (priorite) {
             Sonore::control();
             
-            if (Sonore::obstacle_detected()) {
+            if (!arret && Sonore::obstacle_detected()) {
                 arret = true;
                 H::arret();
             }
@@ -75,6 +70,7 @@ namespace Move {
 
             if (arret && !Sonore::obstacle_detected()) {
                 arret = false;
+                H::mise_en_marche();
             }
         }
     }
@@ -98,9 +94,9 @@ namespace Move {
             arrivee = false;
         }
 
-        if (arrivee_decl) {
+        if (arrivee && !arret) {
             H::arret();
-            arrivee_decl = false;
+            arret = true;
         }
     }
 
@@ -110,23 +106,23 @@ namespace Move {
         LIR::read();
         
         arrivee_control();
+        racourci_control();
+        priorite_control();
 
-        if (!arrivee) {
+        if (!arret) {
             PID::calcul();
         }
-    }
-
-    static void init_arrivee_int() {
-        arrivee_in.mode(PullUp);
-        arrivee_in.fall([]() {
-            arrivee = true;
-            arrivee_decl = true;
-        });
     }
 
     void init() {
         pid_timer.start();
         PID::init();
-        init_arrivee_int();
+        
+        arrivee_in.mode(PullUp);
+        arrivee_in.fall([]() {
+            if (LIR::nul()) {
+                arrivee = true;
+            }
+        });
     }
 }

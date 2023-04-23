@@ -20,7 +20,7 @@ namespace LIR {
     };
 
     template <class Capteur, class Data>
-    class input : public input_read  {
+    class input : public input_read, private NonCopyable<input<Capteur, Data>> {
     public:
         input(PinName pin);
         
@@ -31,9 +31,6 @@ namespace LIR {
         operator Data() {
             return read_cached();
         }
-
-        input(const input&) = delete;
-        input& operator =(const input&) = delete;
 
     protected:
         Capteur capteur;
@@ -60,6 +57,8 @@ namespace LIR {
     bool tout();
 
     bool un();
+
+    bool croisement();
 
     void init(bool inverse = piste);
 

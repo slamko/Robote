@@ -62,6 +62,10 @@ namespace LIR {
         return (l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8);
     }
 
+    bool croisement() {
+        return (l2 && l3 && l6 && l7);
+    }
+
     Digital l1{LIR1};
     Digital l2{LIR2};
     Digital l3{LIR3};

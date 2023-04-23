@@ -10,22 +10,12 @@ namespace DEBUG {
 
     #ifdef DEBUG_MODE
 
-    template <class Msg>
-    void fprint(Msg msg) {
-        printf(msg);
-        printf("\r\n");
-    }
-
-    template <>
     void fprint(int num);
 
-    template <>
     void fprint(float num);
 
-    template <>
     void fprint(double num);
 
-    template <>
     void fprint(const char *msg);
 
     template <class Acc, class Sec, class ...Args>
@@ -45,9 +35,6 @@ namespace DEBUG {
     
     template <class Msg>
     void fprint(Msg msg) { }
-
-    template <>
-    void fprint(const char *msg);
 
     template <class Acc, class Sec, class ...Args>
     void fprint(Acc acc, Sec sec, Args ...args) { } 

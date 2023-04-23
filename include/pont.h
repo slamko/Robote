@@ -17,6 +17,8 @@ namespace H {
 
     void moteur_gauche_avant();
 
+    void mise_en_marche();
+
     void arret();
 
     void init();

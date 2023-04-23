@@ -16,38 +16,27 @@ namespace DEBUG {
         va_end(args);
     }
 
-    template <>
     void fprint(const char *msg) {
-        printf(msg);
+        puts(msg);
     }
 
-
-    template <>
     void fprint(int num) {
         printf("%d ", num);
     }
 
-    template <>
     void fprint(float num) {
         printf("%f ", num);
     }
 
-    template <>
     void fprint(double num) {
         printf("%lf ", num);
     }
-
 
     #else 
 
     void print(const char *msg, ...) {}
 
-    template <>
-    void fprint(const char *msg) {}
-
     #endif
-
-    
 
     void init() {
     }
