@@ -18,11 +18,14 @@ namespace Move {
     const usec PID_Sample_Rate = 1000us; 
     #endif
 
+    const usec RACOURCI_TIME = 30000us;
+
     static Timer pid_timer;
+    static Timer racourci_timer;
     static InterruptIn arrivee_in {ARRIVEE, PullUp};
 
-    static int8_t prev_error;
-    static int8_t cur_error;
+    using error_t = int8_t;
+    static error_t prev_error;
 
     bool priorite;
     bool arrivee;
@@ -30,7 +33,7 @@ namespace Move {
     bool balise_gauche;
     bool racourci_prevoir;
     bool racourci_gauche;
-    bool racourci_droit;
+    bool racourci;
 
 /*
     static void verif_arrivee() {
@@ -54,10 +57,30 @@ namespace Move {
     }
 */
 
-    static int8_t pid_error() {
+    enum Error {
+        E_NUL = 0,
+        E_G1 = -1, 
+        E_G2 = -2,
+        E_G3 = -3,
+        E_G4 = -4,
+        E_G5 = -5,
+        E_D1 = 1,
+        E_D2 = 2,
+        E_D3 = 3,
+        E_D4 = 4,
+        E_D5 = 5,
+    };
+
+    static error_t pid_error() {
         using namespace LIR;
 
         DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8);
+
+        if (racourci && racourci_gauche) {
+            return 5;
+        } else if (racourci) {
+            return -5;
+        }
         
         if (LIR::nul())  {
             if (prev_error > 0) {
@@ -82,6 +105,10 @@ namespace Move {
         if (!l2 && l1) return -4;
 
         return 0;
+    }
+
+    static void figure_control() {
+        using namespace LIR;
     }
 
     static void priorite_control() {
@@ -127,18 +154,27 @@ namespace Move {
 
         if (racourci_prevoir) {
             if (l8 && l7 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
+                racourci = true;
                 racourci_gauche = true;
+            } 
+            else if (!(l8 || l7) && (l6 || l5 || l4 || l3) && l2 && l1) {
+                racourci = true;
+                racourci_gauche = false;
+            }
+
+            if (racourci) {
                 racourci_prevoir = false;
-            } else if (!(l8 || l7) && (l6 || l5 || l4 || l3) && l2 && l1) {
-                racourci_droit = true;
-                racourci_prevoir = false;
+                racourci_timer.reset();
+                racourci_timer.start();
             }
         } 
-        
-        if (racourci_gauche) {
-            cur_error = 5;
-        } else if (racourci_droit) {
-            cur_error = -5;
+
+        if (racourci) {
+            if (racourci_timer.elapsed_time() > RACOURCI_TIME) {   
+                racourci_timer.stop();
+                racourci = false;
+                racourci_gauche = false;
+            }
         }
     }
 
@@ -149,7 +185,7 @@ namespace Move {
             arrivee = false;
         }
 
-        if (arrivee && !arret) {
+        if (!arret) {
             H::arret();
             arret = true;
         }
@@ -162,13 +198,13 @@ namespace Move {
         arrivee_control();
 
         if (!arret) {
-            cur_error = pid_error();
-            
-            racourci_control();
             priorite_control();
-            PID::calcul(cur_error, prev_error);
+            racourci_control();
+            figure_control();
 
-            prev_error = cur_error;
+            error_t error = pid_error();
+            PID::calcul(error, prev_error);
+            prev_error = error;
         }
     }
 

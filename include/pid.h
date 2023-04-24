@@ -13,7 +13,7 @@
 
 namespace PID {
 
-    void calcul(int8_t error, int8_t prev_error);
+    void calcul(const int8_t error, const int8_t prev_error);
 
     void init();
 

@@ -31,7 +31,7 @@ namespace PID {
         return (kp * error) + (ki * pid_integr) + (kd * pid_deriv);
     }
 
-    static float pid_compute(int8_t error, int8_t prev_error) {
+    static float pid_compute(const int8_t error, const int8_t prev_error) {
         float pid_val;
 
         DEBUG::fprint("error: ", error);
@@ -54,7 +54,7 @@ namespace PID {
         return pid_val;
     }
 
-    void calcul(int8_t error, int8_t prev_error) {
+    void calcul(const int8_t error, const int8_t prev_error) {
         float pid_val = pid_compute(error, prev_error); 
 
         // si pid_val > 0 ==> tourner vers la gauche
