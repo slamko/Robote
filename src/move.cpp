@@ -33,6 +33,7 @@ namespace Move {
     bool balise_gauche;
     bool racourci_prevoir;
     bool racourci_gauche;
+    bool rotation_360;
     bool racourci;
 
 /*
@@ -81,6 +82,10 @@ namespace Move {
         } else if (racourci) {
             return -5;
         }
+
+        if (rotation_360) {
+            return 5;
+        }
         
         if (LIR::nul())  {
             if (prev_error > 0) {
@@ -109,6 +114,10 @@ namespace Move {
 
     static void figure_control() {
         using namespace LIR;
+
+        if (ld && l1) {
+            rotation_360 = true;
+        }
     }
 
     static void priorite_control() {
@@ -199,8 +208,7 @@ namespace Move {
 
         if (!arret) {
             priorite_control();
-            racourci_control();
-            figure_control();
+            // racourci_control();
 
             error_t error = pid_error();
             PID::calcul(error, prev_error);

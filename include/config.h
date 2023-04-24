@@ -22,6 +22,8 @@
 #define LIR6 A2
 #define LIR7 A1
 #define LIR8 D11
+#define LG A1
+#define LD A2
 
 #define B D9
 #define R D10

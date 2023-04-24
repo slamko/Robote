@@ -33,7 +33,7 @@ namespace LIR {
         }
     }
 
-    static input_read *lir[8] = {
+    static input_read *lir[10] = {
         &l1,
         &l2,
         &l3,
@@ -41,7 +41,9 @@ namespace LIR {
         &l5,
         &l6,
         &l7,
-        &l8
+        &l8,
+        &lg,
+        &ld
     };
 
     void read() {
@@ -74,4 +76,6 @@ namespace LIR {
     Digital l6{LIR6};
     Digital l7{LIR7};
     Digital l8{LIR8};
+    
+    Digital lg{LG}, ld {LD};
 }

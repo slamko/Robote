@@ -70,6 +70,7 @@ namespace LIR {
     extern Digital l6;
     extern Digital l7;
     extern Digital l8;
+    extern Digital lg, ld;
 }
 
 #endif
