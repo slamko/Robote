@@ -1,6 +1,8 @@
 #ifndef PID_H
 #define PID_H
 
+#include "mbed.h"
+
 #define KP 0.22f // 0.22
 #define KI 0.0f
 #define KD 0.90f // 1.0
@@ -11,7 +13,7 @@
 
 namespace PID {
 
-    void calcul();
+    void calcul(int8_t error, int8_t prev_error);
 
     void init();
 

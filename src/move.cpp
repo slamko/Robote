@@ -1,5 +1,6 @@
 #include "mbed.h"
 #include <InterruptIn.h>
+
 #include "include/config.h"
 #include "include/outils.h"
 #include "include/move.h"
@@ -8,6 +9,7 @@
 #include "include/sonore.h"
 #include "include/pont.h"
 #include "include/events.h"
+#include "include/debug.h"
 
 namespace Move {
     #ifdef DEBUG_MODE
@@ -19,11 +21,16 @@ namespace Move {
     static Timer pid_timer;
     static InterruptIn arrivee_in {ARRIVEE, PullUp};
 
+    static int8_t prev_error;
+    static int8_t cur_error;
+
     bool priorite;
     bool arrivee;
     bool arret;
     bool balise_gauche;
-    bool racourci;
+    bool racourci_prevoir;
+    bool racourci_gauche;
+    bool racourci_droit;
 
 /*
     static void verif_arrivee() {
@@ -47,6 +54,36 @@ namespace Move {
     }
 */
 
+    static int8_t pid_error() {
+        using namespace LIR;
+
+        DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8);
+        
+        if (LIR::nul())  {
+            if (prev_error > 0) {
+                return 5;
+            }
+            if (prev_error < 0) {
+                return -5;
+            }
+        }
+        
+        DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8); 
+        
+        if (l4 &&  l5) return 0;
+
+        if (l6 && !l7) return 1;
+        if (l3 && !l2) return -1;
+        if (l6 && l7 && !l8) return 2;
+        if (l3 && l2) return -2;
+        if (l7 && l8) return 3;
+        if (l2 && l1) return -3;
+        if (!l7 && l8) return 4;
+        if (!l2 && l1) return -4;
+
+        return 0;
+    }
+
     static void priorite_control() {
         using namespace LIR;
 
@@ -57,6 +94,7 @@ namespace Move {
 
         if (priorite) {
             Sonore::control();
+            DEBUG::fprint("echo dist: ", (int)(Sonore::get_obstacle_dist() * 1.0f));
             
             if (!arret && Sonore::obstacle_detected()) {
                 arret = true;
@@ -83,7 +121,24 @@ namespace Move {
         }
 
         if (balise_gauche && !l8) {
-            racourci = true;
+            racourci_prevoir = true;
+            balise_gauche = false;
+        }
+
+        if (racourci_prevoir) {
+            if (l8 && l7 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
+                racourci_gauche = true;
+                racourci_prevoir = false;
+            } else if (!(l8 || l7) && (l6 || l5 || l4 || l3) && l2 && l1) {
+                racourci_droit = true;
+                racourci_prevoir = false;
+            }
+        } 
+        
+        if (racourci_gauche) {
+            cur_error = 5;
+        } else if (racourci_droit) {
+            cur_error = -5;
         }
     }
 
@@ -104,13 +159,16 @@ namespace Move {
         if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
 
         LIR::read();
-        
         arrivee_control();
-        racourci_control();
-        priorite_control();
 
         if (!arret) {
-            PID::calcul();
+            cur_error = pid_error();
+            
+            racourci_control();
+            priorite_control();
+            PID::calcul(cur_error, prev_error);
+
+            prev_error = cur_error;
         }
     }
 
