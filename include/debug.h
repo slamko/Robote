@@ -10,19 +10,25 @@ namespace DEBUG {
 
     #ifdef DEBUG_MODE
 
-    void fprint(int num);
+    template <class T> void add_format(char *);
 
-    void fprint(float num);
+    void fprint_iter(char *format);
 
-    void fprint(double num);
+    template <class T, class... Args> void fprint_iter(char *format, T, Args... args) {
+    add_format<T>(format);
+        fprint_iter(format, args...);
+    }
 
-    void fprint(const char *msg);
+    template <class... Args> void fprint(Args&&... args) {
+    char msg[(sizeof...(args) * 4u) + 3u] = {0};
+    fprint_iter(msg, args...);
+        printf(msg, std::forward<Args>(args)...);
+    }
 
-    template <class Acc, class Sec, class ...Args>
-    void fprint(Acc acc, Sec sec, Args ...args) {
-        fprint(acc);
-        fprint(sec, args...);
-    } 
+    template <class T, class ...Args>
+    void fprint(Args &&...args) {
+        fprint(static_cast<T>(args)...);
+    }
 
     template <class ...Args>
     void nb_print(const char *msg, Args ...args) {

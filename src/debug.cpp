@@ -1,6 +1,6 @@
 #include "mbed.h"
 #include <stdarg.h>
-#include <stdlib.h>
+#include <string.h>
 #include "include/debug.h"
 #include "include/config.h"
 #include "include/events.h"
@@ -15,22 +15,33 @@ namespace DEBUG {
         vprintf(msg, args);
         va_end(args);
     }
-
-    void fprint(const char *msg) {
-        puts(msg);
+/*
+    size_t strlen(const char *str) {
+        const char *s;
+        for (s = str; *s; s++);
+        return s - str;
+    }
+   */
+    template <> void add_format<int>(char *buf) {
+        strcpy(buf + strlen(buf), "%d ");
     }
 
-    void fprint(int num) {
-        printf("%d ", num);
+    template <> void add_format<float>(char *buf) {
+        strcpy(buf + strlen(buf), "%f ");
     }
 
-    void fprint(float num) {
-        printf("%f ", num);
+    template <> void add_format<double>(char *buf) {
+        strcpy(buf + strlen(buf), "%lf ");
     }
 
-    void fprint(double num) {
-        printf("%lf ", num);
+    template <> void add_format<const char *>(char *buf) {
+        strcpy(buf + strlen(buf), "%s ");
     }
+
+    void fprint_iter(char *format) { 
+        sprintf(format + strlen(format), "\r\n");
+    }
+
 
     #else 
 

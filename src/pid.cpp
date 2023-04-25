@@ -34,7 +34,7 @@ namespace PID {
     static float pid_compute(const int8_t error, const int8_t prev_error) {
         float pid_val;
 
-        DEBUG::fprint("error: ", error);
+        DEBUG::print("error: %d\r\n", error);
 
         if (error > 4 ) {
             pid_deriv = +1;

@@ -75,7 +75,7 @@ namespace Move {
     static error_t pid_error() {
         using namespace LIR;
 
-        DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8);
+        DEBUG::fprint<int>(l1, l2, l3, l4, l5, l6, l7, l8);
 
         if (racourci && racourci_gauche) {
             return 5;
@@ -96,7 +96,7 @@ namespace Move {
             }
         }
         
-        DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8); 
+        DEBUG::fprint<int>(l1, l2, l3, l4, l5, l6, l7, l8); 
         
         if (l4 &&  l5) return 0;
 
@@ -130,7 +130,7 @@ namespace Move {
 
         if (priorite) {
             Sonore::control();
-            DEBUG::fprint("echo dist: ", (int)(Sonore::get_obstacle_dist() * 1.0f));
+            DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
             
             if (!arret && Sonore::obstacle_detected()) {
                 arret = true;
