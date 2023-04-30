@@ -5,28 +5,33 @@
 #include "include/config.h"
 #include "include/events.h"
 
+using str = const char *;
+
 namespace DEBUG {
     void print(const char *msg, ...);
 
     #ifdef DEBUG_MODE
 
-    template <class T> void add_format(char *);
+    template <class T> 
+    void add_format(char *);
 
     void fprint_iter(char *format);
 
-    template <class T, class... Args> void fprint_iter(char *format, T, Args... args) {
-    add_format<T>(format);
+    template <class T, class ...Args> 
+    void fprint_iter(char *format, T, Args ...args) {
+        add_format<T>(format);
         fprint_iter(format, args...);
     }
 
-    template <class... Args> void fprint(Args&&... args) {
-    char msg[(sizeof...(args) * 4u) + 3u] = {0};
-    fprint_iter(msg, args...);
-        printf(msg, std::forward<Args>(args)...);
+    template <class ...Args> 
+    void fprint(Args&& ...args) {
+        char msg[(sizeof...(args) * 4u) + 3u] = {0};
+        fprint_iter(msg, args...);
+        printf(msg, args...);
     }
 
     template <class T, class ...Args>
-    void fprint(Args &&...args) {
+    void fprint(Args&& ...args) {
         fprint(static_cast<T>(args)...);
     }
 
@@ -42,8 +47,8 @@ namespace DEBUG {
     template <class Msg>
     void fprint(Msg msg) { }
 
-    template <class Acc, class Sec, class ...Args>
-    void fprint(Acc acc, Sec sec, Args ...args) { } 
+    template <class T, class ...Args>
+    void fprint(Args&& ...args);
     #endif    
 
 

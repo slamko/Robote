@@ -20,21 +20,21 @@ namespace Move {
 
     const usec RACOURCI_TIME = 30000us;
 
-    static Timer pid_timer;
-    static Timer racourci_timer;
+    static Timer pid_timer {};
+    static Timer racourci_timer {};
     static InterruptIn arrivee_in {ARRIVEE, PullUp};
 
     using error_t = int8_t;
     static error_t prev_error;
 
-    bool priorite;
-    bool arrivee;
-    bool arret;
-    bool balise_gauche;
-    bool racourci_prevoir;
-    bool racourci_gauche;
-    bool rotation_360;
-    bool racourci;
+    bool arret = true;
+    bool priorite = false;
+    bool arrivee = false;
+    bool balise_gauche = false;
+    bool racourci_prevoir = false;
+    bool racourci_gauche = false;
+    bool rotation_360 = false;
+    bool racourci = false;
 
 /*
     static void verif_arrivee() {
@@ -71,6 +71,11 @@ namespace Move {
         E_D4 = 4,
         E_D5 = 5,
     };
+
+    void mise_en_marche() {
+        arret = false;
+        H::mise_en_marche();
+    }
 
     static error_t pid_error() {
         using namespace LIR;
@@ -143,13 +148,12 @@ namespace Move {
             }
 
             if (arret && !Sonore::obstacle_detected()) {
-                arret = false;
-                H::mise_en_marche();
+                mise_en_marche();
             }
         }
     }
 
-    static void racourci_control() {
+    static void racourci_control(const int error) {
         using namespace LIR;
 
         if (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
@@ -159,6 +163,10 @@ namespace Move {
         if (balise_gauche && !l8) {
             racourci_prevoir = true;
             balise_gauche = false;
+        }
+
+        if (racourci_prevoir && error) {
+            racourci_prevoir = false;
         }
 
         if (racourci_prevoir) {
@@ -207,10 +215,11 @@ namespace Move {
         arrivee_control();
 
         if (!arret) {
-            priorite_control();
-            // racourci_control();
-
             error_t error = pid_error();
+
+            priorite_control();
+            racourci_control(error);
+
             PID::calcul(error, prev_error);
             prev_error = error;
         }
@@ -226,5 +235,7 @@ namespace Move {
                 arrivee = true;
             }
         });
+
+        mise_en_marche();
     }
 }

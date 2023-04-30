@@ -22,7 +22,6 @@ namespace H {
     void arret();
 
     void init();
-
 }
 
 #endif

@@ -1,6 +1,5 @@
 #include "mbed.h"
 #include <stdarg.h>
-#include <string.h>
 #include "include/debug.h"
 #include "include/config.h"
 #include "include/events.h"
@@ -26,6 +25,14 @@ namespace DEBUG {
         strcpy(buf + strlen(buf), "%d ");
     }
 
+    template <> void add_format<int8_t>(char *buf) {
+        strcpy(buf + strlen(buf), "%d ");
+    }
+
+    template <> void add_format<size_t>(char *buf) {
+        strcpy(buf + strlen(buf), "%zu ");
+    }
+
     template <> void add_format<float>(char *buf) {
         strcpy(buf + strlen(buf), "%f ");
     }
@@ -34,7 +41,7 @@ namespace DEBUG {
         strcpy(buf + strlen(buf), "%lf ");
     }
 
-    template <> void add_format<const char *>(char *buf) {
+    template <> void add_format<str>(char *buf) {
         strcpy(buf + strlen(buf), "%s ");
     }
 

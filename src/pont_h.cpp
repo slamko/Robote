@@ -43,6 +43,11 @@ namespace H {
         in3 = 0;
         in4 = 1;
     }
+    
+    void moteur_gauche_avant() {
+        in3 = 1;
+        in4 = 0;
+    }
 
     void arret_motors() {
         in1 = 0;
@@ -67,10 +72,6 @@ namespace H {
         arret_motors();
     }
 
-    void moteur_gauche_avant() {
-        in3 = 1;
-        in4 = 0;
-    }
 
     void init() {   
         ena.period_us(PWM_PERIOD);
