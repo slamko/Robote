@@ -49,6 +49,10 @@ namespace DEBUG {
 
     template <class T, class ...Args>
     void fprint(Args&& ...args);
+
+    template <class T, class ...Args>
+    void fprint(Args&& ...args) {
+    }
     #endif    
 
 

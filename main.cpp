@@ -11,8 +11,8 @@ static void init() {
     Sonore::init();
     H::init();
     Move::init();
-    DEBUG::init();
-    Events::init();
+   // DEBUG::init();
+   // Events::init();
 }
 
 int main()

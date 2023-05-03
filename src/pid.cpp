@@ -36,14 +36,14 @@ namespace PID {
 
         DEBUG::print("error: %d \r\n", error);
 
-        if (error >= 4 ) {
-            pid_deriv = +1;
+        if (abs(error) >= Move::Err::MAX) {
+            if (error < 0) {
+                pid_deriv = -1;
+            } else if (error) {
+                pid_deriv = 1;
+            }
             pid_val = pid_formule(error, KP_SP, KD_SP);
-        } else if (error < -4) {
-            pid_deriv = -1;
-            pid_val = pid_formule(error, KP_SP, KD_SP);
-        }
-        else {
+        } else {
             pid_integr += error;
             pid_deriv = error - prev_error;
             pid_val = pid_formule(error, KP, KD);

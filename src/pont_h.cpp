@@ -76,10 +76,8 @@ namespace H {
     void init() {   
         ena.period_us(PWM_PERIOD);
         ena.write(0);
-        moteur_droit_avant();
 
         enb.period_us(PWM_PERIOD);
         enb.write(0);
-        moteur_gauche_avant();
     }
 }

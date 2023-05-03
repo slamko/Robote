@@ -4,7 +4,7 @@
 
 namespace LIR {
 
-    static bool inverse { piste };
+    static bool inverse { true };
 
     bool inverse_read() {
         return inverse;
@@ -33,23 +33,17 @@ namespace LIR {
         }
     }
 
-    static input_read *lir[10] = {
-        &l1,
-        &l2,
-        &l3,
-        &l4,
-        &l5,
-        &l6,
-        &l7,
-        &l8,
-        &lg,
-        &ld
-    };
-
     void read() {
-        for(auto capteur : lir) {
-            capteur->read();
-        }
+        l1.read();
+        l2.read();
+        l3.read();
+        l4.read();
+        l5.read();
+        l6.read();
+        l7.read();
+        l8.read();
+       // lg.read();
+      //  ld.read();
     }
 
     bool nul() {
@@ -77,5 +71,5 @@ namespace LIR {
     Digital l7{LIR7};
     Digital l8{LIR8};
     
-    Digital lg{LG}, ld {LD};
+ //   Digital lg{LG}, ld {LD};
 }

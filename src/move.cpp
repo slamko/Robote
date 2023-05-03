@@ -58,20 +58,6 @@ namespace Move {
     }
 */
 
-    enum Error {
-        E_NUL = 0,
-        E_G1 = -1, 
-        E_G2 = -2,
-        E_G3 = -3,
-        E_G4 = -4,
-        E_G5 = -5,
-        E_D1 = 1,
-        E_D2 = 2,
-        E_D3 = 3,
-        E_D4 = 4,
-        E_D5 = 5,
-    };
-
     void mise_en_marche() {
         arret = false;
         H::mise_en_marche();
@@ -80,39 +66,39 @@ namespace Move {
     static error_t pid_error() {
         using namespace LIR;
 
-        DEBUG::fprint<int>(l1, l2, l3, l4, l5, l6, l7, l8);
+        DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8);
 
         if (racourci && racourci_gauche) {
-            return 5;
+            return Err::URGENTE;
         } else if (racourci) {
-            return -5;
+            return -Err::URGENTE;
         }
 
         if (rotation_360) {
-            return 5;
+            return Err::URGENTE;
         }
         
         if (LIR::nul())  {
             if (prev_error > 0) {
-                return 5;
+                return Err::URGENTE;
             }
             if (prev_error < 0) {
-                return -5;
+                return -Err::URGENTE;
             }
         }
         
-        DEBUG::fprint<int>(l1, l2, l3, l4, l5, l6, l7, l8); 
+        DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8); 
         
-        if (l4 &&  l5) return 0;
+        if (l4 &&  l5) return Err::NUL;
 
-        if (l6 && !l7) return 1;
-        if (l3 && !l2) return -1;
-        if (l6 && l7 && !l8) return 2;
-        if (l3 && l2) return -2;
-        if (l7 && l8) return 3;
-        if (l2 && l1) return -3;
-        if (!l7 && l8) return 4;
-        if (!l2 && l1) return -4;
+        if (l6 && !l7) return MIN;
+        if (l3 && !l2) return -MIN;
+        if (l6 && l7 && !l8) return MOYENNE;
+        if (l3 && l2) return -MOYENNE;
+        if (l7 && l8) return IMPORTANTE;
+        if (l2 && l1) return -IMPORTANTE;
+        if (!l7 && l8) return MAX;
+        if (!l2 && l1) return -MAX;
 
         return 0;
     }
@@ -217,25 +203,28 @@ namespace Move {
         if (!arret) {
             error_t error = pid_error();
 
-            priorite_control();
-            racourci_control(error);
+            //priorite_control();
+            //racourci_control(error);
 
             PID::calcul(error, prev_error);
             prev_error = error;
         }
     }
 
-    void init() {
-        pid_timer.start();
-        PID::init();
-        
+    static void init_arrivee_timer() {
         arrivee_in.mode(PullUp);
         arrivee_in.fall([]() {
             if (LIR::nul()) {
                 arrivee = true;
             }
         });
+    }
 
+    void init() {
+        pid_timer.start();
+        PID::init();
+
+        // init_arrivee_timer();
         mise_en_marche();
     }
 }
