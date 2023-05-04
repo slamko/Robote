@@ -17,6 +17,9 @@ static float prev_pid_val;
 static int pid_integr;
 static int pid_deriv;
 
+static bool gauche_arriere = false; 
+static bool droit_arriere = false; 
+
 namespace PID {
 
     static void limit_out(float &out) {
@@ -39,7 +42,7 @@ namespace PID {
         if (abs(error) >= Move::Err::MAX) {
             if (error < 0) {
                 pid_deriv = -1;
-            } else if (error) {
+            } else if (error > 0) {
                 pid_deriv = 1;
             }
             pid_val = pid_formule(error, KP_SP, KD_SP);
@@ -62,10 +65,19 @@ namespace PID {
 
         H::moteur_droit(abs(MAX_SPEED + pid_val)); 
 
-        if ((MAX_SPEED - pid_val) < 0.0f) {
-            H::moteur_gauche_arriere();
+        if (gauche_arriere) {
+
         } else {
+            
+        }
+        if ((MAX_SPEED - pid_val) < 0.0f && !gauche_arriere) {
+            H::moteur_gauche_arriere();
+            gauche_arriere = true;
+        } else if ((MAX_SPEED - pid_val) > 0.0f && !gauche_arriere){
             H::moteur_gauche_avant();
+        } 
+        if ((MAX_SPEED - pid_val) < 0.1f && gauche_arriere){
+            H::moteur_gauche_arriere();
         }
 
         H::moteur_gauche(abs(MAX_SPEED - pid_val));

@@ -36,8 +36,8 @@ namespace DEBUG {
     }
 
     template <class ...Args>
-    void nb_print(const char *msg, Args ...args) {
-       Events::call(printf, msg, args...);
+    void nb_print(const char *msg) {
+       Events::print(printf, msg);
     }
 
     #else

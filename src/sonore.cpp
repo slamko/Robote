@@ -17,12 +17,11 @@ namespace Sonore {
     bool echo_rise_act {false};
     bool echo_fall_act {false};
 
-    DigitalOut led {LED};
+    float distance = OBSTACLE_DETECT_DIST + 1.0f;
+    usec echo_pulse_dur;
 
     DigitalOut trig {TRIG};
     InterruptIn echo {ECHO};
-    usec echo_pulse_dur;
-    float distance = OBSTACLE_DETECT_DIST + 1.0f;
     Timer echo_timer;
     Timer trig_timer;
     Timer trig_repeat_timer;

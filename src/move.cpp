@@ -78,7 +78,7 @@ namespace Move {
             return Err::URGENTE;
         }
         
-        if (LIR::nul())  {
+        if (LIR::nul()) {
             if (prev_error > 0) {
                 return Err::URGENTE;
             }
