@@ -34,6 +34,10 @@ namespace H {
         in2 = 1;
     }
 
+    bool droit_arriere() {
+        return in2;
+    }
+
     void moteur_droit_avant() {
         in1 = 1;
         in2 = 0;
@@ -42,6 +46,10 @@ namespace H {
     void moteur_gauche_arriere() {
         in3 = 0;
         in4 = 1;
+    }
+
+    bool gauche_arriere() {
+        return in4;
     }
     
     void moteur_gauche_avant() {

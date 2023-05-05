@@ -37,9 +37,9 @@ namespace PID {
     static float pid_compute(const int8_t error, const int8_t prev_error) {
         float pid_val;
 
-        DEBUG::print("error: %d \r\n", error);
+       // DEBUG::print("error: %d \r\n", error);
 
-        if (abs(error) >= Move::Err::MAX) {
+        if (abs(error) >= Move::Err::URGENTE) {
             if (error < 0) {
                 pid_deriv = -1;
             } else if (error > 0) {
@@ -62,14 +62,34 @@ namespace PID {
 
         // si pid_val > 0 ==> tourner vers la gauche
         // si pid_val < 0 ==> tourner vers la droite
+        
+        if ((MAX_SPEED - pid_val) < 0.0f) {
+            H::moteur_gauche_arriere();
+        } else {
+            H::moteur_gauche_avant();
+        }
+
+        if ((MAX_SPEED + pid_val) < 0.0f) {
+            H::moteur_droit_arriere();
+        } else {
+            H::moteur_droit_avant();
+        }
 
         H::moteur_droit(abs(MAX_SPEED + pid_val)); 
-
+        H::moteur_gauche(abs(MAX_SPEED - pid_val));
+        
+/*
         if (gauche_arriere) {
-
+            if ((MAX_SPEED - pid_val) > 0.1f){
+                H::moteur_gauche_avant();
+            } 
         } else {
-            
+            if ((MAX_SPEED - pid_val) < 0.0f) {
+                H::moteur_gauche_arriere();
+                gauche_arriere = true;
+            }  
         }
+
         if ((MAX_SPEED - pid_val) < 0.0f && !gauche_arriere) {
             H::moteur_gauche_arriere();
             gauche_arriere = true;
@@ -86,7 +106,7 @@ namespace PID {
             H::moteur_droit_arriere();
         } else {
             H::moteur_droit_avant();
-        }
+        }*/
     }
 
     void init() {       

@@ -7,7 +7,7 @@ namespace LIR {
     static bool inverse { true };
 
     bool inverse_read() {
-        return inverse;
+        return true;
     }
 
     void init(bool inv) {

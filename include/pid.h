@@ -3,7 +3,7 @@
 
 #include "mbed.h"
 
-#define KP 0.30f // 0.22
+#define KP 0.22f // 0.22
 #define KI 0.0f
 #define KD 0.0f // 1.0
 

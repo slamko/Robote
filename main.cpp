@@ -7,12 +7,9 @@
 #include "include/events.h"
 
 static void init() {
-    LIR::init();
     Sonore::init();
     H::init();
     Move::init();
-   // DEBUG::init();
-   // Events::init();
 }
 
 int main()
@@ -20,6 +17,7 @@ int main()
     init();
 
     while (1) {
-        Move::control();               
+        Move::control();
+       // Events::loop();            
     }
 }

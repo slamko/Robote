@@ -15,14 +15,14 @@ namespace Move {
     #ifdef DEBUG_MODE
     const usec PID_Sample_Rate = 500000us; 
     #else
-    const usec PID_Sample_Rate = 1000us; 
+    const usec PID_Sample_Rate = 500us; 
     #endif
 
     const usec RACOURCI_TIME = 30000us;
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
-    static InterruptIn arrivee_in {ARRIVEE, PullUp};
+    static InterruptIn arrivee_in {ARRIVEE};
 
     using error_t = int8_t;
     static error_t prev_error;
@@ -66,16 +66,12 @@ namespace Move {
     static error_t pid_error() {
         using namespace LIR;
 
-        DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8);
+        //DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8);
 
         if (racourci && racourci_gauche) {
             return Err::URGENTE;
         } else if (racourci) {
             return -Err::URGENTE;
-        }
-
-        if (rotation_360) {
-            return Err::URGENTE;
         }
         
         if (LIR::nul()) {
@@ -87,7 +83,7 @@ namespace Move {
             }
         }
         
-        DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8); 
+       // DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8); 
         
         if (l4 &&  l5) return Err::NUL;
 
@@ -186,6 +182,7 @@ namespace Move {
 
         if (LIR::un()) {
             arrivee = false;
+            mise_en_marche();
         }
 
         if (!arret) {
@@ -198,12 +195,14 @@ namespace Move {
         if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
 
         LIR::read();
+
         arrivee_control();
+        //priorite_control();
 
         if (!arret) {
             error_t error = pid_error();
-
-            //priorite_control();
+            Sonore::control();
+            DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
             //racourci_control(error);
 
             PID::calcul(error, prev_error);
@@ -212,8 +211,8 @@ namespace Move {
     }
 
     static void init_arrivee_timer() {
-        arrivee_in.mode(PullUp);
-        arrivee_in.fall([]() {
+        arrivee_in.mode(PullDown);
+        arrivee_in.rise([]() {
             if (LIR::nul()) {
                 arrivee = true;
             }
@@ -223,8 +222,9 @@ namespace Move {
     void init() {
         pid_timer.start();
         PID::init();
+        Sonore::start();
 
-        // init_arrivee_timer();
+        init_arrivee_timer();
         mise_en_marche();
     }
 }

@@ -6,13 +6,19 @@ namespace Events {
     //EventQueue queue {};
     //static Thread ethread {};
 
+/*
+    string_literal operator""_s(const char *str, size_t len)
+    {
+        return string_literal(str);
+    }
+*/
     static const size_t PRINT_CB_NUM = 8;
 
     static print_cb print_cbs[PRINT_CB_NUM];
     static const char *print_cb_args[PRINT_CB_NUM];
     static size_t cur_cb = 0;
 
-    void print(print_cb cb, const char *msg) {
+    void print(print_cb cb, const char * msg) {
         if (cur_cb >= PRINT_CB_NUM) return;
 
         print_cbs[cur_cb] = cb;

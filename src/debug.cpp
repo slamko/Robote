@@ -6,7 +6,7 @@
 
 namespace DEBUG {
 
-    #ifdef DEBUG_MODE
+    #if DEBUG_MODE
 
     void print(const char *msg, ...) {
         va_list args;

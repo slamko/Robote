@@ -10,7 +10,7 @@ using str = const char *;
 namespace DEBUG {
     void print(const char *msg, ...);
 
-    #ifdef DEBUG_MODE
+    #if DEBUG_MODE
 
     template <class T> 
     void add_format(char *);

@@ -2,6 +2,7 @@
 
 #include "include/config.h"
 #include "include/sonore.h"
+#include "include/events.h"
 #include "include/debug.h"
 #include "include/outils.h"
 
@@ -26,9 +27,12 @@ namespace Sonore {
     Timer trig_timer;
     Timer trig_repeat_timer;
 
+    bool echo_rise = false;
+    bool echo_fall = false;
+
     static void gen_trig_pulse() {
         trig = 1;
-        //DEBUG::print("trig\n\r");
+       // DEBUG::print("trig\n\r");
         trig_timer.reset();
         trig_timer.start();
     }
@@ -38,7 +42,7 @@ namespace Sonore {
 
         if (trig_timer.elapsed_time() > TRIG_PULSE_DUR) {
             trig = 0;
-           // DEBUG::print("fin_trig\n\r");
+            //DEBUG::print("fin_trig\n\r");
             trig_timer.stop();
         }
     }
@@ -46,8 +50,8 @@ namespace Sonore {
     static void on_echo_rise() {
         echo_timer.reset();
         echo_timer.start();
-        
-        DEBUG::nb_print("echo rise\r\n");
+        echo_rise = true;
+        //DEBUG::nb_print("echo rise\r\n");
     }
 
     static void on_echo_fall() {
@@ -55,7 +59,7 @@ namespace Sonore {
         echo_pulse_dur = echo_timer.elapsed_time();
         distance = get_obstacle_dist();
 
-        DEBUG::nb_print("echo fall\r\n");
+       // DEBUG::nb_print("echo fall\r\n");
     }
 
     float get_obstacle_dist() {
@@ -64,6 +68,10 @@ namespace Sonore {
     
     void control() {
         check_trig_pulse();
+        if (echo_rise) {
+            echo_rise = false;
+            //DEBUG::print("fff");
+        }
 
         if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
             trig_repeat_timer.reset();
