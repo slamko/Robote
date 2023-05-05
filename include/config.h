@@ -3,13 +3,13 @@
 
 #include "mbed.h"
 
-#define ENA D3
-#define ENB D6
+#define ENA D6
+#define ENB D3
 
-#define IN1 D4
-#define IN2 D5
-#define IN3 D8
-#define IN4 D7
+#define IN1 D8
+#define IN2 D7
+#define IN3 D4
+#define IN4 D5
 
 #define ECHO D1
 #define TRIG D0
@@ -36,6 +36,6 @@
 #define LED D13
 
 #define PISTE_BLANCHE true
-#define DEBUG_MODE 0
+// #define DEBUG_MODE
 
 #endif

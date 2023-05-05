@@ -7,20 +7,20 @@ namespace H {
     static const int PWM_PERIOD = useci{100}.count();
     static const int ARRET_TIME = useci{30000}.count();
 
-    static PwmOut ena {ENA};
     static PwmOut enb {ENB};
+    static PwmOut ena {ENA};
     static DigitalOut in1 {IN1};
     static DigitalOut in2 {IN2};
     static DigitalOut in3 {IN3};
     static DigitalOut in4 {IN4};
 
     float moteur_droit(float val) {
-        ena.write(val);
+        enb.write(val);
         return val;
     }
 
     float moteur_gauche(float val) {
-        enb.write(val);
+        ena.write(val);
         return val;
     }
 
@@ -30,8 +30,8 @@ namespace H {
     }
 
     void moteur_droit_arriere() {
-        in1 = 0;
-        in2 = 1;
+        in3 = 0;
+        in4 = 1;
     }
 
     bool droit_arriere() {
@@ -39,22 +39,22 @@ namespace H {
     }
 
     void moteur_droit_avant() {
-        in1 = 1;
-        in2 = 0;
+        in3 = 1;
+        in4 = 0;
     }
 
     void moteur_gauche_arriere() {
-        in3 = 0;
-        in4 = 1;
+        in1 = 0;
+        in2 = 1;
     }
 
     bool gauche_arriere() {
-        return in4;
+        return in2;
     }
     
     void moteur_gauche_avant() {
-        in3 = 1;
-        in4 = 0;
+        in1 = 1;
+        in2 = 0;
     }
 
     void arret_motors() {
@@ -82,10 +82,10 @@ namespace H {
 
 
     void init() {   
-        ena.period_us(PWM_PERIOD);
-        ena.write(0);
-
         enb.period_us(PWM_PERIOD);
         enb.write(0);
+
+        ena.period_us(PWM_PERIOD);
+        ena.write(0);
     }
 }

@@ -6,7 +6,7 @@
 
 namespace DEBUG {
 
-    #if DEBUG_MODE
+    #ifdef DEBUG_MODE
 
     void print(const char *msg, ...) {
         va_list args;
@@ -14,13 +14,7 @@ namespace DEBUG {
         vprintf(msg, args);
         va_end(args);
     }
-/*
-    size_t strlen(const char *str) {
-        const char *s;
-        for (s = str; *s; s++);
-        return s - str;
-    }
-   */
+
     template <> void add_format<int>(char *buf) {
         strcpy(buf + strlen(buf), "%d ");
     }
