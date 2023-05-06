@@ -29,6 +29,7 @@
 #define R D10
 #define Y D11
 #define ARRIVEE A7
+#define RC5 A5
 
 #define OUTL D12
 #define OUTR D2

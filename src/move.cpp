@@ -36,31 +36,22 @@ namespace Move {
     bool rotation_360 = false;
     bool racourci = false;
 
-/*
-    static void verif_arrivee() {
-        const int 
-            l1 = LIR::lir1, l2 = LIR::lir2, 
-            l3 = LIR::lir3, l4 = LIR::lir4, 
-            l5 = LIR::lir5, l6 = LIR::lir6,
-            l7 = LIR::lir7, l8 = LIR::lir8;
-
-        if ((l6 + l7 + l8 + l5 + l3 + l2 + l1 + l4) >= 6)  {
-            arrivee = true;
-        }
-
-        if ((!l6 && !l7 && !l8 && !l5 && !l3 && !l2 && !l1 && !l4) && arrivee)  {
-            
-        }
-
-        if(arrivee) {
-            H::arreter();
-        }
-    }
-*/
-
     void mise_en_marche() {
+        if (!arret) return;
+
+        pid_timer.reset();
+        pid_timer.start();
+
         arret = false;
         H::mise_en_marche();
+    }
+
+    void stop() {
+        if (arret) return;
+
+        pid_timer.stop();
+        arret = true;
+        H::arret();
     }
 
     static error_t pid_error() {
@@ -120,8 +111,7 @@ namespace Move {
             DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
             
             if (!arret && Sonore::obstacle_detected()) {
-                arret = true;
-                H::arret();
+                stop();
             }
 
             if (croisement()) {
@@ -180,14 +170,8 @@ namespace Move {
     static void arrivee_control() {
         if (!arrivee) return;
 
-        if (LIR::un()) {
-            arrivee = false;
-            mise_en_marche();
-        }
-
         if (!arret) {
-            H::arret();
-            arret = true;
+            stop();
         }
     }
 
@@ -196,8 +180,8 @@ namespace Move {
 
         LIR::read();
         arrivee_control();
-       // Sonore::control();
-      //  DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
+        // Sonore::control();
+        // DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
         //priorite_control();
 
         if (!arret) {
@@ -221,8 +205,7 @@ namespace Move {
     }
 
     void init() {
-        pid_timer.start();
-      //  Sonore::start();
+        //  Sonore::start();
 
         init_arrivee_timer();
         mise_en_marche();

@@ -4,13 +4,15 @@
 #include "include/move.h"
 #include "include/debug.h"
 #include "include/lir.h"
+#include "include/rc5.h"
 #include "include/events.h"
 #include <stdio.h>
 
 static void init() {
-    Sonore::init();
     H::init();
     Move::init();
+    Telecommande::init();
+    Sonore::init();
 }
 
 int main()
