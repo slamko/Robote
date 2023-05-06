@@ -28,7 +28,7 @@
 #define B D9
 #define R D10
 #define Y D11
-#define ARRIVEE D13
+#define ARRIVEE A7
 
 #define OUTL D12
 #define OUTR D2
@@ -36,6 +36,6 @@
 #define LED D13
 
 #define PISTE_BLANCHE true
-// #define DEBUG_MODE
+//#define DEBUG_MODE
 
 #endif

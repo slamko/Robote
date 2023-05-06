@@ -5,6 +5,7 @@
 #include "include/debug.h"
 #include "include/lir.h"
 #include "include/events.h"
+#include <stdio.h>
 
 static void init() {
     Sonore::init();
@@ -15,9 +16,8 @@ static void init() {
 int main()
 {
     init();
-
+    
     while (1) {
-        Move::control();
-       // Events::loop();            
+       Move::control();            
     }
 }

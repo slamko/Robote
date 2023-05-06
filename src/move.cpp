@@ -196,6 +196,8 @@ namespace Move {
 
         LIR::read();
         arrivee_control();
+       // Sonore::control();
+      //  DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
         //priorite_control();
 
         if (!arret) {
@@ -220,6 +222,7 @@ namespace Move {
 
     void init() {
         pid_timer.start();
+      //  Sonore::start();
 
         init_arrivee_timer();
         mise_en_marche();

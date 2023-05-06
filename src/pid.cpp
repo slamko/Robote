@@ -36,20 +36,34 @@ namespace PID {
 
     static float pid_compute(const int8_t error, const int8_t prev_error) {
         float pid_val;
+        using namespace Move;
 
        // DEBUG::print("error: %d \r\n", error);
 
-        if (abs(error) >= Move::Err::URGENTE) {
+        if (error != prev_error) {
+            pid_integr += error;
+        }
+        pid_deriv = error - prev_error;
+        
+        switch (abs(error)) {
+       /* case Err::IMPORTANTE:
+            pid_val = pid_formule(error, KP_IMPORTANTE, KD_IMPORTANTE;
+            break;
+        case Err::MAX:
+            pid_val = pid_formule(error, KP_MAX, KD_MAX);
+            break;
+            */
+        case Err::URGENTE:
             if (error < 0) {
                 pid_deriv = -1;
             } else if (error > 0) {
                 pid_deriv = 1;
             }
-            pid_val = pid_formule(error, KP_SP, KD_SP);
-        } else {
-            pid_integr += error;
-            pid_deriv = error - prev_error;
-            pid_val = pid_formule(error, KP, KD);
+            pid_val = pid_formule(error, KP_URGENTE, KD_URGENTE);
+            break;
+        default:
+            pid_val = pid_formule(error, KP, KD, KI);
+            break;
         }
 
         //limit_out(pid_val);

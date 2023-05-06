@@ -10,10 +10,6 @@ namespace LIR {
         Blanche = true
     };
 
-    static constexpr PisteType piste = PisteType::Blanche;
-
-    bool inverse_read();
-
     class input_read {
         public:
             virtual void read() = 0;
@@ -60,7 +56,7 @@ namespace LIR {
 
     bool croisement();
 
-    void init(bool inverse = piste);
+    void init();
 
     extern Digital l1;
     extern Digital l2;

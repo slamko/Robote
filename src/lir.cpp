@@ -3,11 +3,11 @@
 #include "include/lir.h"
 
 namespace LIR {
-
-    static bool inverse { true };
+    static constexpr PisteType piste = PisteType::Blanche;
+    static bool inverse { piste };
 
     bool inverse_read() {
-        return true;
+        return inverse;
     }
 
     void init(bool inv) {
@@ -18,7 +18,7 @@ namespace LIR {
     input<Capteur, Data>::input(PinName pin) : capteur(pin), data{} {}
 
     void Analog::read() {
-        if (LIR::inverse_read()) {
+        if (inverse_read()) {
             data = (1.0f - capteur.read());
         } else {
             data = capteur.read();
@@ -26,7 +26,7 @@ namespace LIR {
     }
 
     void Digital::read() {
-        if (LIR::inverse_read()) {
+        if (inverse_read()) {
             data = !capteur.read();
         } else {
             data = capteur.read();
