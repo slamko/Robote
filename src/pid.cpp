@@ -40,8 +40,9 @@ namespace PID {
 
        // DEBUG::print("error: %d \r\n", error);
 
-        if (error != prev_error)
-        pid_integr += error;
+        if (error != prev_error) {
+            pid_integr += error;
+        }
         pid_deriv = error - prev_error;
 
         if (error == 0) {
@@ -49,10 +50,8 @@ namespace PID {
         }
         
         switch (abs(error)) {
-
-       /* 
         case Err::MIN:
-            pid_val = pid_formule(error, KP, KD);
+            pid_val = pid_formule(error, KP_MIN, KD_MIN);
             break;
         case Err::MOYENNE:
             pid_val = pid_formule(error, KP_MOYENNE, KD_MOYENNE, KI);
@@ -63,21 +62,12 @@ namespace PID {
         case Err::MAX:
             pid_val = pid_formule(error, KP_MAX, KD_MAX, KI);
             break;
-            */
         case Err::URGENTE:
-            if (error < 0) {
-                pid_deriv = -1;
-            } else if (error > 0) {
-                pid_deriv = 1;
-            }
+            pid_deriv = 0;
             pid_val = pid_formule(error, KP_URGENTE, KD_URGENTE);
             break;
         default:
-            if (abs(error) > 2) {
-                pid_val = pid_formule(error, KP, KD, KI);
-            } else {
-                pid_val = pid_formule(error, KP, KD, 0.0F);
-            }
+            pid_val = pid_formule(error, KP, KD);
             break;
         }
 
