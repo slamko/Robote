@@ -8,6 +8,8 @@ namespace Sonore {
     void run_sonore();
     void init();
 
+    void debug();
+
     void start();
     void stop();
 

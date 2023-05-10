@@ -7,7 +7,7 @@
 #define KI 0.0f
 #define KD 10.0f // 1.0
 
-#define KP_URGENTE 0.5f // 0.16
+#define KP_URGENTE 0.4f // 0.16
 #define KI_URGENTE 0.0f
 #define KD_URGENTE 0.0f
 

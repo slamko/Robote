@@ -15,7 +15,7 @@ namespace Move {
     #ifdef DEBUG_MODE
     const usec PID_Sample_Rate = 500000us; 
     #else
-    const usec PID_Sample_Rate = 1000us; 
+    const usec PID_Sample_Rate = 800us; 
     #endif
 
     const usec RACOURCI_TIME = 30000us;
@@ -177,19 +177,12 @@ namespace Move {
         }
     }
 
-    void sonore_debug(void) {
-        #ifndef DEBUF_MODE
-        Sonore::control();
-        DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
-        #endif
-    }
-
     void control() {
         if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
 
         LIR::read();
         arrivee_control();
-        sonore_debug();
+        Sonore::debug();
 
         //priorite_control();
 
@@ -207,8 +200,8 @@ namespace Move {
     static void init_arrivee_timer() {
         #ifndef DEBUG_MODE
 
-        arrivee_in.mode(PullDown);
-        arrivee_in.rise([]() {
+        arrivee_in.mode(PullUp);
+        arrivee_in.fall([]() {
             if (LIR::nul()) {
                 arrivee = true;
             }

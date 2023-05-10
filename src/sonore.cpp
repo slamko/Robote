@@ -58,7 +58,7 @@ namespace Sonore {
         echo_timer.stop();
         echo_pulse_dur = echo_timer.elapsed_time();
         distance = get_obstacle_dist();
-
+        echo_fall = true;
        // DEBUG::nb_print("echo fall\r\n");
     }
 
@@ -70,13 +70,27 @@ namespace Sonore {
         check_trig_pulse();
         if (echo_rise) {
             echo_rise = false;
-            //DEBUG::print("fff");
         }
 
         if (trig_repeat_timer.elapsed_time() > SONORE_RESTART_INT) {
             trig_repeat_timer.reset();
             gen_trig_pulse();
         }
+    }
+
+    void debug() {
+    #ifdef DEBUF_SONORE
+        control();
+        DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
+
+        if (echo_rise) {
+            DEBUG::print("echo rise\r\n");
+            echo_rise = false;
+        } else if (echo_fall) {
+            DEBUG::print("echo false\r\n");
+            echo_fall = false;
+        }
+    #endif
     }
 
     bool obstacle_detected() {

@@ -63,6 +63,11 @@ namespace PID {
             pid_val = pid_formule(error, KP_MAX, KD_MAX, KI);
             break;
         case Err::URGENTE:
+            if (error < 0) {
+                pid_deriv = -1;
+            } else {
+                pid_deriv = 1;
+            }
             pid_deriv = 0;
             pid_val = pid_formule(error, KP_URGENTE, KD_URGENTE);
             break;
