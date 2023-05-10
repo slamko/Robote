@@ -9,8 +9,8 @@
 #include "include/sonore.h"
 #include "include/move.h"
 
-const float PID_Max_Out = 2.0f;
-const float PID_Min_Out = -2.0f;
+const float PID_Max_Out = 0.8f;
+const float PID_Min_Out = -0.8f;
 const float MAX_SPEED = 1.0f;
 
 static float prev_pid_val;
@@ -22,12 +22,13 @@ static bool droit_arriere = false;
 
 namespace PID {
 
-    static void limit_out(float &out) {
+    static float limit_out(float out) {
         if (out <= PID_Min_Out) {
-            out = PID_Min_Out;
+            return PID_Min_Out;
         } else if (out >= PID_Max_Out) {
-            out = PID_Max_Out;
+            return  PID_Max_Out;
         }
+        return out;
     }
 
     static float pid_formule(int8_t error, float kp, float kd, float ki = 0.0f) {
@@ -99,8 +100,9 @@ namespace PID {
             H::moteur_droit_avant();
         }
 
-        H::moteur_droit(abs(MAX_SPEED + pid_val)); 
-        H::moteur_gauche(abs(MAX_SPEED - pid_val));
+
+        H::moteur_droit(limit_out(abs(MAX_SPEED + pid_val))); 
+        H::moteur_gauche(limit_out(abs(MAX_SPEED - pid_val)));
         
 /*
         if (gauche_arriere) {
