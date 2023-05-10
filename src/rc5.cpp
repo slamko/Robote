@@ -4,11 +4,11 @@
 #include "include/move.h"
 
 namespace Telecommande {
-    static InterruptIn signal {RC5};
+   // static InterruptIn signal {RC5};
 
     void init() {
-        signal.mode(PullNone);
+       /* signal.mode(PullNone);
         signal.rise(&Move::mise_en_marche);
-        signal.fall(&Move::stop);
+        signal.fall(&Move::stop);*/
     }
 }

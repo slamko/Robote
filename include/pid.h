@@ -4,7 +4,7 @@
 #include "mbed.h"
 
 #define KP 0.20f // 0.20
-#define KI 0.0f
+#define KI 0.01f
 #define KD 10.0f // 1.0
 
 #define KP_URGENTE 0.2f // 0.16

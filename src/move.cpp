@@ -22,7 +22,9 @@ namespace Move {
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
+#ifndef DEBUG_MODE
     static InterruptIn arrivee_in {ARRIVEE};
+#endif
 
     using error_t = int8_t;
     static error_t prev_error;
@@ -175,13 +177,20 @@ namespace Move {
         }
     }
 
+    void sonore_debug(void) {
+        #ifndef DEBUF_MODE
+        Sonore::control();
+        DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
+        #endif
+    }
+
     void control() {
         if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
 
         LIR::read();
         arrivee_control();
-        // Sonore::control();
-        // DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
+        sonore_debug();
+
         //priorite_control();
 
         if (!arret) {
@@ -196,16 +205,19 @@ namespace Move {
     }
 
     static void init_arrivee_timer() {
+        #ifndef DEBUG_MODE
+
         arrivee_in.mode(PullDown);
         arrivee_in.rise([]() {
             if (LIR::nul()) {
                 arrivee = true;
             }
         });
+        #endif
     }
 
     void init() {
-        //  Sonore::start();
+        Sonore::start();
 
         init_arrivee_timer();
         mise_en_marche();

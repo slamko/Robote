@@ -8,9 +8,9 @@
 using str = const char *;
 
 namespace DEBUG {
-    void print(const char *msg, ...);
 
     #ifdef DEBUG_MODE
+    void print(const char *msg, ...);
 
     template <class T> 
     void add_format(char *);
@@ -41,6 +41,8 @@ namespace DEBUG {
     }
 
     #else
+     void print(const char *msg, ...);
+
     template <class ...Args>
     void nb_print(const char *msg, Args ...args) { }
     
