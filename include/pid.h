@@ -7,7 +7,7 @@
 #define KI 0.0f
 #define KD 10.0f // 1.0
 
-#define KP_URGENTE 0.8f // 0.16
+#define KP_URGENTE 0.85f // 0.16
 #define KI_URGENTE 0.0f
 #define KD_URGENTE 0.0f
 
@@ -19,11 +19,11 @@
 #define KI_MOYENNE 0.0f
 #define KD_MOYENNE 10.0f // 0.75
 
-#define KP_IMPORTANTE 0.7f // 0.16
+#define KP_IMPORTANTE 0.72f // 0.16
 #define KI_IMPORTANTE 0.0f
 #define KD_IMPORTANTE 10.0f // 0.75
 
-#define KP_MAX 0.8f // 0.16
+#define KP_MAX 0.85f // 0.16
 #define KI_MAX 0.0f
 #define KD_MAX 10.0f // 0.75
 
