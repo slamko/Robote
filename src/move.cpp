@@ -28,6 +28,7 @@ namespace Move {
 
     using error_t = int8_t;
     static error_t prev_error;
+    static error_t error;
 
     bool arret = true;
     bool priorite = false;
@@ -92,6 +93,20 @@ namespace Move {
         return 0;
     }
 
+    static void verif_arrivee() {
+        using namespace LIR;
+
+        if ((l1 + l2 + l3 + l4 + l5 + l6 + l7 + l8) >= 4)  {
+            arrivee = true;
+        } else if (arrivee && LIR::un()) {
+            arrivee = false;
+        }
+
+        if (LIR::nul() && arrivee)  {
+            stop();
+        }
+    }
+
     static void figure_control() {
         using namespace LIR;
 
@@ -106,6 +121,7 @@ namespace Move {
         if (l1 && (l6 || l5 || l4 || l3) && !l2 && !( l8 || l7)) {
             priorite = true;
             Sonore::start();
+            DEBUG::print("Priorite\r\n");
         }
 
         if (priorite) {
@@ -113,6 +129,7 @@ namespace Move {
             DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
             
             if (!arret && Sonore::obstacle_detected()) {
+                DEBUG::print("obstacle\r\n");
                 stop();
             }
 
@@ -187,7 +204,7 @@ namespace Move {
         //priorite_control();
 
         if (!arret) {
-            error_t error = pid_error();
+            error = pid_error();
             //racourci_control(error);
 
             PID::calcul(error, prev_error);
@@ -200,17 +217,15 @@ namespace Move {
     static void init_arrivee_timer() {
         #ifndef DEBUG_MODE
 
-        arrivee_in.mode(PullUp);
-        arrivee_in.fall([]() {
-            if (LIR::nul()) {
-                arrivee = true;
-            }
+        arrivee_in.mode(PullNone);
+        arrivee_in.rise([]() {
+            arrivee = true;
         });
         #endif
     }
 
     void init() {
-        Sonore::start();
+       // Sonore::start();
 
         init_arrivee_timer();
         mise_en_marche();

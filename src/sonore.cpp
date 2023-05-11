@@ -13,7 +13,7 @@ namespace Sonore {
     const usec SONORE_RESTART_INT = 60000us; 
     const usec TRIG_PULSE_DUR = 10us; 
     const usecf SOUND_SPEED = 0.034us;
-    const float OBSTACLE_DETECT_DIST = 50.0f;
+    const float OBSTACLE_DETECT_DIST = 40.0f;
     
     bool echo_rise_act {false};
     bool echo_fall_act {false};
@@ -79,7 +79,7 @@ namespace Sonore {
     }
 
     void debug() {
-    #ifdef DEBUF_SONORE
+    #ifdef DEBUG_SONORE
         control();
         DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
 
