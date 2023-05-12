@@ -33,6 +33,8 @@ namespace Move {
 
     bool arret = true;
     bool priorite = false;
+    bool l1_on;
+    bool l1_off = true;
     bool arrivee = false;
     bool balise_gauche = false;
     bool racourci_prevoir = false;
@@ -180,8 +182,8 @@ namespace Move {
             DEBUG::print("racourci prevoir\r\n");
             balise_gauche = false;
             racourci_prevoir = true;
-            PID_Max_Out = 0.2f;
-            PID_Min_Out = -0.2f;
+           /* PID_Max_Out = 0.25f;
+            PID_Min_Out = -0.25f;*/
         }
         
 /*
@@ -204,21 +206,34 @@ namespace Move {
             if (racourci) {
                 DEBUG::print("racourci\r\n");
                 racourci_prevoir = false;
+                //racourci = false;
+                PID_Max_Out = 0.9f;
+                PID_Min_Out = -0.9f;
+                /*
                 racourci_timer.reset();
                 racourci_timer.start();
                 PID_Max_Out = 0.9f;
                 PID_Min_Out = -0.9f;
+                */
             }
         } 
 
         if (racourci) {
-            if (racourci_timer.elapsed_time() > RACOURCI_TIME) {   
-                racourci_timer.stop();
-                
+            if (l1_off && l1) {
+                l1_off = false;
+            }
+            if (!l1_off && !l1) {
                 racourci = false;
                 racourci_gauche = false;
                 racourci_prevoir = false;
             }
+            /*
+            if (racourci_timer.elapsed_time() > RACOURCI_TIME) {   
+                racourci_timer.stop();
+                
+                
+            }
+            */
         }
     }
 
