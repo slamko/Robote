@@ -12,6 +12,10 @@ namespace H {
     void moteur_droit_arriere();
     bool droit_arriere();
 
+    void arret_motors();
+
+    void marche_arriere();
+
     void moteur_droit_avant();
 
     void moteur_gauche_arriere();
@@ -22,6 +26,8 @@ namespace H {
     void mise_en_marche();
 
     void arret();
+
+    void arrivee();
 
     void init();
 }

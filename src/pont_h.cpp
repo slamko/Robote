@@ -5,7 +5,8 @@
 
 namespace H {
     static const int PWM_PERIOD = useci{100}.count();
-    static const int ARRET_TIME = useci{30000}.count();
+    static const int ARRET_TIME = useci{300000}.count();
+    static const int ARRIVEE_TIME = useci{50000}.count();
 
     static PwmOut enb {ENB};
     static PwmOut ena {ENA};
@@ -71,12 +72,23 @@ namespace H {
         moteur_gauche_avant();
     }
 
-    void arret() {
+    void marche_arriere() {
         moteur_droit_arriere();
         moteur_gauche_arriere();
         moteurs(1.0f);
+    }
+
+    void arret() {
+        marche_arriere();
         
         wait_us(ARRET_TIME);
+        arret_motors();
+    }
+
+    void arrivee() {
+        marche_arriere();
+        
+        wait_us(ARRIVEE_TIME);
         arret_motors();
     }
 

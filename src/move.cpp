@@ -22,6 +22,7 @@ namespace Move {
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
+    static Timer arret_timer {};
 #ifndef DEBUG_MODE
     static InterruptIn arrivee_in {ARRIVEE};
 #endif
@@ -36,6 +37,7 @@ namespace Move {
     bool balise_gauche = false;
     bool racourci_prevoir = false;
     bool racourci_gauche = false;
+    bool priorite_arret = false;
     bool rotation_360 = false;
     bool racourci = false;
 
@@ -52,7 +54,6 @@ namespace Move {
     void stop() {
         if (arret) return;
 
-        pid_timer.stop();
         arret = true;
         H::arret();
     }
@@ -115,39 +116,60 @@ namespace Move {
         }
     }
 
+    static bool balise_priorite() {
+        using namespace LIR;
+        return (l1 && l5 && l4 && !( l8 || l7));
+    }
+
+    static bool balise_racourci() {
+        using namespace LIR;
+        return (l8 && l5 && l4 && !(l1 || l2));
+    }
+
     static void priorite_control() {
         using namespace LIR;
-
-        if (l1 && (l6 || l5 || l4 || l3) && !l2 && !( l8 || l7)) {
-            priorite = true;
-            Sonore::start();
-            DEBUG::print("Priorite\r\n");
-        }
 
         if (priorite) {
             Sonore::control();
             DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
-            
+           /* 
+            if (priorite_arret && balise_priorite()) {
+                H::arret_motors();
+                arret = true;
+            }
+*/
             if (!arret && Sonore::obstacle_detected()) {
                 DEBUG::print("obstacle\r\n");
                 stop();
             }
+            
 
             if (croisement()) {
                 priorite = false;
+                DEBUG::print("croisement\r\n");
                 Sonore::stop();
             }
 
+
             if (arret && !Sonore::obstacle_detected()) {
+                priorite = false;
                 mise_en_marche();
+                Sonore::stop();
+                DEBUG::print("mise en marche\r\n");
+                wait_us(5000);
             }
+            
+        } else  if (balise_priorite()) {
+            priorite = true;
+            Sonore::start();
+            DEBUG::print("Priorite\r\n");
         }
     }
 
     static void racourci_control(const int error) {
         using namespace LIR;
 
-        if (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
+        if () {
             balise_gauche = true;
         }
 
@@ -190,7 +212,9 @@ namespace Move {
         if (!arrivee) return;
 
         if (!arret) {
-            stop();
+            arret = true;
+            pid_timer.stop();
+            H::arrivee();
         }
     }
 
@@ -201,9 +225,9 @@ namespace Move {
         arrivee_control();
         Sonore::debug();
 
-        //priorite_control();
+        priorite_control();
 
-        if (!arret) {
+        if (!arret && !priorite_arret) {
             error = pid_error();
             //racourci_control(error);
 
