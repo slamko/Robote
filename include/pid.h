@@ -26,6 +26,8 @@
 #define KP_MAX 0.85f // 0.16
 #define KI_MAX 0.0f
 #define KD_MAX 10.0f // 0.75
+extern float PID_Max_Out;
+extern float PID_Min_Out;
 
 namespace PID {
 

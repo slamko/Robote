@@ -18,7 +18,7 @@ namespace Move {
     const usec PID_Sample_Rate = 800us; 
     #endif
 
-    const usec RACOURCI_TIME = 30000us;
+    const usec RACOURCI_TIME = 150000us;
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
@@ -123,7 +123,7 @@ namespace Move {
 
     static bool balise_racourci() {
         using namespace LIR;
-        return (l8 && l5 && l4 && !(l1 || l2));
+        return (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2));
     }
 
     static void priorite_control() {
@@ -166,44 +166,58 @@ namespace Move {
         }
     }
 
-    static void racourci_control(const int error) {
+    static void racourci_control() {
         using namespace LIR;
 
-        if () {
+        if (!balise_gauche && balise_racourci()) {
             balise_gauche = true;
+           // racourci_prevoir = true;
+            //wait_us(300000);
+            DEBUG::print("balise gauche\r\n");
         }
 
         if (balise_gauche && !l8) {
-            racourci_prevoir = true;
+            DEBUG::print("racourci prevoir\r\n");
             balise_gauche = false;
+            racourci_prevoir = true;
+            PID_Max_Out = 0.2f;
+            PID_Min_Out = -0.2f;
         }
-
-        if (racourci_prevoir && error) {
+        
+/*
+        if (racourci_prevoir && (error >= 3)) {
             racourci_prevoir = false;
+            DEBUG::print("cancel racourci\r\n");
         }
-
+*/      
         if (racourci_prevoir) {
             if (l8 && l7 && (l6 || l5 || l4 || l3) && !(l1 || l2)) {
                 racourci = true;
                 racourci_gauche = true;
             } 
+            /*
             else if (!(l8 || l7) && (l6 || l5 || l4 || l3) && l2 && l1) {
                 racourci = true;
                 racourci_gauche = false;
             }
-
+*/
             if (racourci) {
+                DEBUG::print("racourci\r\n");
                 racourci_prevoir = false;
                 racourci_timer.reset();
                 racourci_timer.start();
+                PID_Max_Out = 0.9f;
+                PID_Min_Out = -0.9f;
             }
         } 
 
         if (racourci) {
             if (racourci_timer.elapsed_time() > RACOURCI_TIME) {   
                 racourci_timer.stop();
+                
                 racourci = false;
                 racourci_gauche = false;
+                racourci_prevoir = false;
             }
         }
     }
@@ -229,7 +243,7 @@ namespace Move {
 
         if (!arret && !priorite_arret) {
             error = pid_error();
-            //racourci_control(error);
+            racourci_control();
 
             PID::calcul(error, prev_error);
             prev_error = error;
@@ -250,7 +264,7 @@ namespace Move {
 
     void init() {
        // Sonore::start();
-
+        //racourci_prevoir = true;
         init_arrivee_timer();
         mise_en_marche();
     }

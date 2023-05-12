@@ -9,8 +9,8 @@
 #include "include/sonore.h"
 #include "include/move.h"
 
-const float PID_Max_Out = 0.9f;
-const float PID_Min_Out = -0.9f;
+float PID_Max_Out = 0.9f;
+float PID_Min_Out = -0.9f;
 const float MAX_SPEED = 1.0f;
 
 static float prev_pid_val;
