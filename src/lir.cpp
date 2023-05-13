@@ -62,6 +62,21 @@ namespace LIR {
         return (l2 && l3 && l6 && l7);
     }
 
+    bool balise_priorite() {
+        return (l1 && l5 && l4 && !( l8 || l7));
+    }
+
+    bool balise_racourci() {
+        return (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2));
+    }
+
+    bool piste_gauche() {
+        return (l8 && l7 && (l6 || l5 || l4 || l3) && !(l1 || l2));
+    }
+    bool piste_droite() {
+        return (!(l8 || l7) && (l6 || l5 || l4 || l3) && l2 && l1);
+    }
+
     Digital l1{LIR1};
     Digital l2{LIR2};
     Digital l3{LIR3};

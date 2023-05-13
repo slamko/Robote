@@ -49,12 +49,15 @@ namespace LIR {
     void read();
 
     bool nul();
-
     bool tout();
-
     bool un();
-
     bool croisement();
+
+    bool balise_racourci();
+    bool balise_priorite();
+
+    bool piste_gauche();
+    bool piste_droite();
 
     void init();
 
