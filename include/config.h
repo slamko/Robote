@@ -40,4 +40,7 @@
 // #define DEBUG_MODE
 // #define DEBUG_SONORE
 
+#define PRIORITE_ENABLE
+#define RACOURCI_ENABLE
+
 #endif

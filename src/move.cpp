@@ -19,6 +19,7 @@ namespace Move {
     #endif
 
     const usec RACOURCI_TIME = 150000us;
+    const int MIS_EN_MARCHE_TIME = usec(5000us).count(); 
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
@@ -34,11 +35,13 @@ namespace Move {
     bool arret = true;
     bool priorite = false;
     bool ldroit_on = false;
+    bool lgauche_on = false;
     bool arrivee = false;
     bool balise_gauche = false;
     bool racourci_prevoir = false;
     bool racourci_gauche = false;
-    bool priorite_arret = false;
+    bool racourci_pris = false;
+    bool fin_racourci = false;
     bool rotation_360 = false;
     bool racourci = false;
 
@@ -69,7 +72,13 @@ namespace Move {
         } else if (racourci) {
             return -Err::URGENTE;
         }
-        
+/*
+        if (fin_racourci && racourci_gauche) {
+            return Err::URGENTE;
+        } else if (fin_racourci) {
+            return -Err::URGENTE;
+        }
+     */   
         if (LIR::nul()) {
             if (prev_error > 0) {
                 return Err::URGENTE;
@@ -94,7 +103,7 @@ namespace Move {
 
         return 0;
     }
-
+/*
     static void verif_arrivee() {
         using namespace LIR;
 
@@ -108,9 +117,11 @@ namespace Move {
             stop();
         }
     }
+*/
 
     static void figure_control() {
-        using namespace LIR;
+        using LIR::l1;
+        using LIR::ld;
 
         if (ld && l1) {
             rotation_360 = true;
@@ -118,11 +129,10 @@ namespace Move {
     }
 
     static void priorite_control() {
-        using namespace LIR;
-
         if (priorite) {
             Sonore::control();
             DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
+
            /* 
             if (priorite_arret && balise_priorite()) {
                 H::arret_motors();
@@ -134,22 +144,20 @@ namespace Move {
                 stop();
             }
             
-
             if (LIR::croisement()) {
                 priorite = false;
                 DEBUG::print("croisement\r\n");
                 Sonore::stop();
             }
 
-
             if (arret && !Sonore::obstacle_detected()) {
+                DEBUG::print("mise en marche\r\n");
+                
                 priorite = false;
                 mise_en_marche();
                 Sonore::stop();
-                DEBUG::print("mise en marche\r\n");
-                wait_us(5000);
+                wait_us(MIS_EN_MARCHE_TIME);
             }
-            
         } else  if (LIR::balise_priorite()) {
             priorite = true;
             Sonore::start();
@@ -158,7 +166,8 @@ namespace Move {
     }
 
     static void racourci_control() {
-        using namespace LIR;
+        using LIR::l1;
+        using LIR::l8;
 
         if (!balise_gauche && LIR::balise_racourci()) {
             balise_gauche = true;
@@ -190,10 +199,6 @@ namespace Move {
             if (racourci) {
                 DEBUG::print("racourci\r\n");
                 racourci_prevoir = false;
-                /*
-                racourci_timer.reset();
-                racourci_timer.start();
-                */
             }
         } 
 
@@ -205,6 +210,7 @@ namespace Move {
                 racourci = false;
                 ldroit_on = false;
                 racourci_gauche = false;
+                racourci_pris = true;
             }
 
             /*
@@ -214,6 +220,21 @@ namespace Move {
                 
             }
             */
+        }
+
+        if (racourci_pris) {
+            if (racourci) {
+                if (lgauche_on && !l8) {
+                    racourci = false;
+                    racourci_pris = false;
+                    lgauche_on = false;
+                }
+            }
+
+            if (LIR::croisement() && l8) {
+                lgauche_on = true;
+                racourci = true;
+            }
         }
     }
 
@@ -234,11 +255,16 @@ namespace Move {
         arrivee_control();
         Sonore::debug();
 
+#ifdef PRIORITE_ENABLE
         priorite_control();
+#endif
 
-        if (!arret && !priorite_arret) {
+        if (!arret) {
             error = pid_error();
+
+#ifdef RACOURCI_ENABLE
             racourci_control();
+#endif
 
             PID::calcul(error, prev_error);
             prev_error = error;
