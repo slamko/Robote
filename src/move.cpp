@@ -134,7 +134,7 @@ namespace Move {
             DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
 
            /* 
-            if (priorite_arret && balise_priorite()) {
+            if (priorite_arret && balise_droite()) {
                 H::arret_motors();
                 arret = true;
             }
@@ -158,7 +158,7 @@ namespace Move {
                 Sonore::stop();
                 wait_us(MIS_EN_MARCHE_TIME);
             }
-        } else  if (LIR::balise_priorite()) {
+        } else  if (LIR::balise_droite()) {
             priorite = true;
             Sonore::start();
             DEBUG::print("Priorite\r\n");
@@ -169,7 +169,7 @@ namespace Move {
         using LIR::l1;
         using LIR::l8;
 
-        if (!balise_gauche && LIR::balise_racourci()) {
+        if (!balise_gauche && LIR::balise_gauche()) {
             balise_gauche = true;
             DEBUG::print("balise gauche\r\n");
         }
@@ -228,12 +228,14 @@ namespace Move {
                     racourci = false;
                     racourci_pris = false;
                     lgauche_on = false;
+                    racourci_gauche = false;
                 }
             }
 
             if (LIR::croisement() && l8) {
                 lgauche_on = true;
                 racourci = true;
+                racourci_gauche = true;
             }
         }
     }
@@ -286,6 +288,7 @@ namespace Move {
     void init() {
         // Sonore::start();
         //racourci_prevoir = true;
+        PID::set_max_out(0.9f);
         init_arrivee_timer();
         mise_en_marche();
     }

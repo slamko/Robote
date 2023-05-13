@@ -53,8 +53,8 @@ namespace LIR {
     bool un();
     bool croisement();
 
-    bool balise_racourci();
-    bool balise_priorite();
+    bool balise_gauche();
+    bool balise_droite();
 
     bool piste_gauche();
     bool piste_droite();

@@ -62,11 +62,11 @@ namespace LIR {
         return (l2 && l3 && l6 && l7);
     }
 
-    bool balise_priorite() {
+    bool balise_droite() {
         return (l1 && l5 && l4 && !( l8 || l7));
     }
 
-    bool balise_racourci() {
+    bool balise_gauche() {
         return (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2));
     }
 

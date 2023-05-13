@@ -26,14 +26,14 @@
 #define KP_MAX 0.85f // 0.16
 #define KI_MAX 0.0f
 #define KD_MAX 10.0f // 0.75
-extern float PID_Max_Out;
-extern float PID_Min_Out;
 
 namespace PID {
 
     void calcul(const int8_t error, const int8_t prev_error);
 
     void init();
+
+    void set_max_out(const float max_val);
 
 }
 #endif
