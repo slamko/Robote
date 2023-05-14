@@ -120,6 +120,10 @@ namespace Sonore {
     }
 
     void init() {
+#ifdef SONORE_DEBUG
+        Sonore::start();
+#endif
+
         echo.mode(PullDown);
     }
 }

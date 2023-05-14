@@ -41,6 +41,7 @@
 // #define DEBUG_SONORE
 
 #define PRIORITE_ENABLE
-#define RACOURCI_ENABLE
+#define RACCOURCI_ENABLE
+#define RACCORCI_GAUCHE
 
 #endif

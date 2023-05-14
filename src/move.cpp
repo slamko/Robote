@@ -185,7 +185,8 @@ namespace Move {
             racourci_prevoir = false;
             DEBUG::print("cancel racourci\r\n");
         }
-*/      
+*/     
+ 
         if (racourci_prevoir) {
             if (LIR::piste_gauche()) {
                 racourci = true;
@@ -224,18 +225,35 @@ namespace Move {
 
         if (racourci_pris) {
             if (racourci) {
-                if (lgauche_on && !l8) {
+
+#ifdef RACCOURCI_GAUCHE
+                if (lgauche_on && !l8)
+#else
+                if (ldroit_on && !l1)
+#endif
+                {
                     racourci = false;
                     racourci_pris = false;
                     lgauche_on = false;
+                    ldroit_on = false;
                     racourci_gauche = false;
                 }
             }
 
-            if (LIR::croisement() && l8) {
-                lgauche_on = true;
+            if (LIR::croisement()) {
+#ifdef RACCOURCI_GAUCHE
+                if (l8) {
+                    lgauche_on = true;
+                    racourci_gauche = true;
+                } 
+#else
+                if (l1) {
+                    ldroit_on = true;
+                    racourci_gauche = false;
+                }
+#endif
+
                 racourci = true;
-                racourci_gauche = true;
             }
         }
     }
@@ -264,7 +282,7 @@ namespace Move {
         if (!arret) {
             error = pid_error();
 
-#ifdef RACOURCI_ENABLE
+#ifdef RACCOURCI_ENABLE
             racourci_control();
 #endif
 
@@ -286,8 +304,6 @@ namespace Move {
     }
 
     void init() {
-        // Sonore::start();
-        //racourci_prevoir = true;
         PID::set_max_out(0.9f);
         init_arrivee_timer();
         mise_en_marche();

@@ -31,8 +31,9 @@ namespace PID {
         return out;
     }
 
-    static void limit_out(float &out) {
+    static float limit_out(float &out) {
         out = limit_out(mstd::move(out));
+        return out;
     }
 
     void set_max_out(const float max_val) {
@@ -44,8 +45,8 @@ namespace PID {
     }
 
     static float pid_compute(const int8_t error, const int8_t prev_error) {
+        using Move::Err;
         float pid_val;
-        using namespace Move;
 
        // DEBUG::print("error: %d \r\n", error);
 
@@ -72,11 +73,6 @@ namespace PID {
             pid_val = pid_formule(error, KP_MAX, KD_MAX, KI);
             break;
         case Err::URGENTE:
-            if (error < 0) {
-                pid_deriv = -1;
-            } else {
-                pid_deriv = 1;
-            }
             pid_deriv = 0;
             pid_val = pid_formule(error, KP_URGENTE, KD_URGENTE);
             break;
@@ -85,7 +81,7 @@ namespace PID {
             break;
         }
 
-        limit_out(pid_val);
+        // limit_out(pid_val);
 
         return pid_val;
     }
@@ -124,23 +120,17 @@ namespace PID {
             }  
         }
 
-        if ((MAX_SPEED - pid_val) < 0.0f && !gauche_arriere) {
-            H::moteur_gauche_arriere();
-            gauche_arriere = true;
-        } else if ((MAX_SPEED - pid_val) > 0.0f && !gauche_arriere){
-            H::moteur_gauche_avant();
-        } 
-        if ((MAX_SPEED - pid_val) < 0.1f && gauche_arriere){
-            H::moteur_gauche_arriere();
-        }
-
-        H::moteur_gauche(abs(MAX_SPEED - pid_val));
-
-        if ((MAX_SPEED + pid_val) < 0.0f) {
-            H::moteur_droit_arriere();
+        if (droit_arriere) {
+            if ((MAX_SPEED + pid_val) > 0.1f){
+                H::moteur_droit_avant();
+            } 
         } else {
-            H::moteur_droit_avant();
-        }*/
+            if ((MAX_SPEED + pid_val) < 0.0f) {
+                H::moteur_droit_arriere();
+                droit_arriere = true;
+            }  
+        }
+*/
     }
 
     void init() {       
