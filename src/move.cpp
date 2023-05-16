@@ -15,7 +15,7 @@ namespace Move {
     #ifdef DEBUG_MODE
     const usec PID_Sample_Rate = 500000us; 
     #else
-    const usec PID_Sample_Rate = 800us; 
+    const usec PID_Sample_Rate = 3100us; 
     #endif
 
     const usec RACOURCI_TIME = 150000us;
@@ -165,11 +165,16 @@ namespace Move {
         }
     }
 
+    bool balise_raccourci() {
+        using namespace LIR;
+        return (l8 && (!l7 || !l6) && (l6 || l5 || l4 || l3) && !(l1 || l2));
+    }
+
     static void racourci_control() {
         using LIR::l1;
         using LIR::l8;
 
-        if (!balise_gauche && LIR::balise_gauche()) {
+        if (!balise_gauche && !racourci_prevoir && balise_raccourci()) {
             balise_gauche = true;
             DEBUG::print("balise gauche\r\n");
         }
@@ -200,6 +205,7 @@ namespace Move {
             if (racourci) {
                 DEBUG::print("racourci\r\n");
                 racourci_prevoir = false;
+                balise_gauche = false;
             }
         } 
 
@@ -211,6 +217,7 @@ namespace Move {
                 racourci = false;
                 ldroit_on = false;
                 racourci_gauche = false;
+                balise_gauche = false;
                 racourci_pris = true;
             }
 
