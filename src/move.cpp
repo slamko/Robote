@@ -15,7 +15,7 @@ namespace Move {
     #ifdef DEBUG_MODE
     const usec PID_Sample_Rate = 500000us; 
     #else
-    const usec PID_Sample_Rate = 3100us; 
+    const usec PID_Sample_Rate = 3800us; 
     #endif
 
     const usec RACOURCI_TIME = 150000us;
@@ -44,6 +44,7 @@ namespace Move {
     bool fin_racourci = false;
     bool rotation_360 = false;
     bool racourci = false;
+    bool en_raccourci = false;
 
     void mise_en_marche() {
         if (!arret) return;
@@ -72,13 +73,13 @@ namespace Move {
         } else if (racourci) {
             return -Err::URGENTE;
         }
-/*
+
         if (fin_racourci && racourci_gauche) {
             return Err::URGENTE;
         } else if (fin_racourci) {
             return -Err::URGENTE;
         }
-     */   
+     
         if (LIR::nul()) {
             if (prev_error > 0) {
                 return Err::URGENTE;
@@ -174,7 +175,7 @@ namespace Move {
         using LIR::l1;
         using LIR::l8;
 
-        if (!balise_gauche && !racourci_prevoir && balise_raccourci()) {
+        if (!balise_gauche && !racourci_prevoir && !racourci && !racourci_pris && !en_raccourci && !fin_racourci && balise_raccourci()) {
             balise_gauche = true;
             DEBUG::print("balise gauche\r\n");
         }
@@ -212,6 +213,7 @@ namespace Move {
         if (racourci) {
             if (!ldroit_on && l1) {
                 ldroit_on = true;
+                DEBUG::print("Ldroit active\r\n");
             }
             if (ldroit_on && !l1) {
                 racourci = false;
@@ -219,6 +221,7 @@ namespace Move {
                 racourci_gauche = false;
                 balise_gauche = false;
                 racourci_pris = true;
+                DEBUG::print("Racourci pris\r\n");
             }
 
             /*
@@ -228,10 +231,12 @@ namespace Move {
                 
             }
             */
+            DEBUG::print("Racourci\r\n");
         }
 
         if (racourci_pris) {
-            if (racourci) {
+            DEBUG::print("Racourci en train\r\n");
+            if (fin_racourci) {
 
 #ifdef RACCOURCI_GAUCHE
                 if (lgauche_on && !l8)
@@ -239,28 +244,39 @@ namespace Move {
                 if (ldroit_on && !l1)
 #endif
                 {
+                    DEBUG::print("tourne\r\n");
+                    fin_racourci = false;
                     racourci = false;
+                    racourci_prevoir = false;
                     racourci_pris = false;
                     lgauche_on = false;
                     ldroit_on = false;
                     racourci_gauche = false;
+                    en_raccourci = false;
                 }
             }
 
-            if (LIR::croisement()) {
+            if (LIR::croisement() && !en_raccourci) {
+                DEBUG::print("Raccourci croisement\r\n");
 #ifdef RACCOURCI_GAUCHE
+
                 if (l8) {
                     lgauche_on = true;
                     racourci_gauche = true;
+                    DEBUG::print("croise: lgauche\r\n");
                 } 
+                
 #else
+
                 if (l1) {
                     ldroit_on = true;
                     racourci_gauche = false;
+                    DEBUG::print("croise: ldroit\r\n");
                 }
+                
 #endif
-
-                racourci = true;
+                en_raccourci = true;
+                fin_racourci = true;
             }
         }
     }

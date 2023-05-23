@@ -42,6 +42,6 @@
 
 //#define PRIORITE_ENABLE
 #define RACCOURCI_ENABLE
-#define RACCORCI_GAUCHE
+#define RACCOURCI_GAUCHE
 
 #endif
