@@ -15,7 +15,7 @@ namespace Move {
     #ifdef DEBUG_MODE
     const usec PID_Sample_Rate = 500000us; 
     #else
-    const usec PID_Sample_Rate = 3800us; 
+    const usec PID_Sample_Rate = 4600us; 
     #endif
 
     const usec RACOURCI_TIME = 150000us;
@@ -175,7 +175,7 @@ namespace Move {
         using LIR::l1;
         using LIR::l8;
 
-        if (!balise_gauche && !racourci_prevoir && !racourci && !racourci_pris && !en_raccourci && !fin_racourci && balise_raccourci()) {
+        if (!balise_gauche && !racourci_prevoir && !racourci && !racourci_pris && !fin_racourci && balise_raccourci()) {
             balise_gauche = true;
             DEBUG::print("balise gauche\r\n");
         }
@@ -224,13 +224,6 @@ namespace Move {
                 DEBUG::print("Racourci pris\r\n");
             }
 
-            /*
-            if (racourci_timer.elapsed_time() > RACOURCI_TIME) {   
-                racourci_timer.stop();
-                
-                
-            }
-            */
             DEBUG::print("Racourci\r\n");
         }
 
@@ -252,11 +245,10 @@ namespace Move {
                     lgauche_on = false;
                     ldroit_on = false;
                     racourci_gauche = false;
-                    en_raccourci = false;
                 }
             }
 
-            if (LIR::croisement() && !en_raccourci) {
+            if (LIR::croisement() && !fin_racourci) {
                 DEBUG::print("Raccourci croisement\r\n");
 #ifdef RACCOURCI_GAUCHE
 
@@ -264,18 +256,16 @@ namespace Move {
                     lgauche_on = true;
                     racourci_gauche = true;
                     DEBUG::print("croise: lgauche\r\n");
-                } 
-                
+                }    
 #else
 
                 if (l1) {
                     ldroit_on = true;
                     racourci_gauche = false;
                     DEBUG::print("croise: ldroit\r\n");
-                }
-                
+                }     
 #endif
-                en_raccourci = true;
+
                 fin_racourci = true;
             }
         }
@@ -299,7 +289,9 @@ namespace Move {
         Sonore::debug();
 
 #ifdef PRIORITE_ENABLE
-        priorite_control();
+        if (!racourci && !fin_racourci && !racourci_pris) {
+            priorite_control();
+        }
 #endif
 
         if (!arret) {
