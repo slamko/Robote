@@ -38,6 +38,8 @@ namespace Move {
     bool lgauche_on = false;
     bool arrivee = false;
     bool balise_gauche = false;
+    bool balise_droite = false;
+    bool en_croisement = false;
     bool racourci_prevoir = false;
     bool racourci_gauche = false;
     bool racourci_pris = false;
@@ -45,6 +47,11 @@ namespace Move {
     bool rotation_360 = false;
     bool racourci = false;
     bool en_raccourci = false;
+    bool rotation_fini = false;
+
+    unsigned int croisement_counter;
+    unsigned int balise_droite_counter;
+    unsigned int balise_gauche_counter;
 
     void mise_en_marche() {
         if (!arret) return;
@@ -72,6 +79,10 @@ namespace Move {
             return Err::URGENTE;
         } else if (racourci) {
             return -Err::URGENTE;
+        }
+
+        if (rotation_360) {
+            return Err::URGENTE;
         }
 
         if (fin_racourci && racourci_gauche) {
@@ -104,6 +115,7 @@ namespace Move {
 
         return 0;
     }
+
 /*
     static void verif_arrivee() {
         using namespace LIR;
@@ -129,6 +141,19 @@ namespace Move {
         }
     }
 
+    static void demi_tour() {
+        using namespace LIR;
+
+        if (!rotation_360) {
+            rotation_360 = true;
+        }
+
+        if (l8) {
+            rotation_fini = true;
+            rotation_360 = false;
+        }
+    }
+
     static void priorite_control() {
         if (priorite) {
             Sonore::control();
@@ -139,18 +164,19 @@ namespace Move {
                 H::arret_motors();
                 arret = true;
             }
-*/
+
             if (!arret && Sonore::obstacle_detected()) {
                 DEBUG::print("obstacle\r\n");
                 stop();
             }
-            
+      */      
             if (LIR::croisement()) {
                 priorite = false;
+                PID::set_max_out(1.0f);
                 DEBUG::print("croisement\r\n");
                 Sonore::stop();
             }
-
+/*
             if (arret && !Sonore::obstacle_detected()) {
                 DEBUG::print("mise en marche\r\n");
                 
@@ -159,23 +185,50 @@ namespace Move {
                 Sonore::stop();
                 wait_us(MIS_EN_MARCHE_TIME);
             }
-        } else  if (LIR::balise_droite()) {
+            */
+        } else  if (LIR::balise_priorite() && !priorite) {
             priorite = true;
+
             Sonore::start();
+            //PID::set_max_out(0.5f);
             DEBUG::print("Priorite\r\n");
+        }
+        else {
+            if (Sonore::obstacle_detected()) {
+                DEBUG::print("obstacle\r\n");
+                stop();
+            }
         }
     }
 
-    bool balise_raccourci() {
-        using namespace LIR;
-        return (l8 && (!l7 || !l6) && (l6 || l5 || l4 || l3) && !(l1 || l2));
+    void balise_counter() {
+        if (!balise_droite && LIR::balise_priorite()) {
+            balise_droite = true;
+        }
+
+        if (balise_droite && !LIR::balise_priorite()) {
+            balise_droite = false;
+            balise_droite_counter ++;
+        }
+
+        if (!en_croisement && LIR::croisement()) {
+            en_croisement = true;
+        }
+
+        if (en_croisement && !LIR::croisement()) {
+            en_croisement = false;
+            croisement_counter ++;
+        }
     }
 
     static void racourci_control() {
         using LIR::l1;
         using LIR::l8;
 
-        if (!balise_gauche && !racourci_prevoir && !racourci && !racourci_pris && !fin_racourci && balise_raccourci()) {
+        if (LIR::balise_raccourci() 
+                &&!balise_gauche && !racourci_prevoir 
+                && !racourci && !racourci_pris && !fin_racourci) {
+
             balise_gauche = true;
             DEBUG::print("balise gauche\r\n");
         }
@@ -184,6 +237,7 @@ namespace Move {
             DEBUG::print("racourci prevoir\r\n");
             balise_gauche = false;
             racourci_prevoir = true;
+            balise_gauche_counter ++;
         }
         
 /*
@@ -194,6 +248,10 @@ namespace Move {
 */     
  
         if (racourci_prevoir) {
+            if (LIR::croisement() || (LIR::piste_gauche() && LIR::piste_droite())) {
+                racourci_prevoir = false;
+            }
+
             if (LIR::piste_gauche()) {
                 racourci = true;
                 racourci_gauche = true;
@@ -288,9 +346,9 @@ namespace Move {
         arrivee_control();
         Sonore::debug();
 
+        // priorite_control();
 #ifdef PRIORITE_ENABLE
         if (!racourci && !fin_racourci && !racourci_pris) {
-            priorite_control();
         }
 #endif
 
@@ -319,7 +377,6 @@ namespace Move {
     }
 
     void init() {
-        PID::set_max_out(0.9f);
         init_arrivee_timer();
         mise_en_marche();
     }

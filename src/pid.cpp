@@ -20,7 +20,7 @@ namespace PID {
     static bool gauche_arriere = false; 
     static bool droit_arriere = false; 
     
-    static float max_out = 0.9f;
+    static float max_out = MAX_VITESSE;
 
     static float limit_out(float&& out) {
         if (out <= -max_out) {

@@ -70,6 +70,16 @@ namespace LIR {
         return (l8 && (l6 || l5 || l4 || l3) && !(l1 || l2));
     }
 
+    bool balise_raccourci() {
+        using namespace LIR;
+        return (l8 && (!l7 || !l6) && (l6 || l5 || l4 || l3) && !(l1 || l2));
+    }
+
+    bool balise_priorite() {
+        using namespace LIR;
+        return (l1 && (!l2 || !l3) && (l6 || l5 || l4 || l3) && !(l7 || l8));
+    }
+
     bool piste_gauche() {
         return (l8 && l7 && (l6 || l5 || l4 || l3) && !(l1 || l2));
     }

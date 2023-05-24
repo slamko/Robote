@@ -15,6 +15,7 @@ namespace Sonore {
 
     float get_obstacle_dist();
     bool obstacle_detected();
+    bool obstacle_proche();
 }
 
 #endif

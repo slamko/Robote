@@ -27,6 +27,8 @@
 #define KI_MAX 0.0f
 #define KD_MAX 10.0f // 0.75
 
+#define MAX_VITESSE 1.0f
+
 namespace PID {
 
     void calcul(const int8_t error, const int8_t prev_error);

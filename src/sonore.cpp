@@ -14,6 +14,7 @@ namespace Sonore {
     const usec TRIG_PULSE_DUR = 10us; 
     const usecf SOUND_SPEED = 0.034us;
     const float OBSTACLE_DETECT_DIST = 40.0f;
+    const float OBSTACLE_PROCHE_DIST = 80.0f;
     
     bool echo_rise_act {false};
     bool echo_fall_act {false};
@@ -95,6 +96,10 @@ namespace Sonore {
 
     bool obstacle_detected() {
         return distance < OBSTACLE_DETECT_DIST;
+    }
+
+    bool obstacle_proche() {
+        return distance < OBSTACLE_PROCHE_DIST;
     }
 
     void run_sonore() {

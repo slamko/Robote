@@ -56,6 +56,9 @@ namespace LIR {
     bool balise_gauche();
     bool balise_droite();
 
+    bool balise_raccourci();
+    bool balise_priorite();
+
     bool piste_gauche();
     bool piste_droite();
 
