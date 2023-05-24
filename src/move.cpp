@@ -20,10 +20,14 @@ namespace Move {
 
     const usec RACOURCI_TIME = 150000us;
     const int MIS_EN_MARCHE_TIME = usec(5000us).count(); 
+    const int RACCOURCI_PREVOIR_TIME = usec(500000us).count(); 
+    const int DEMI_TOUR_WAIT_TIME = usec(300000us).count(); 
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
+    static Timer demi_tour_timer {};
     static Timer arret_timer {};
+    static Timer raccourci_prevoir_timer {};
 #ifndef DEBUG_MODE
     static InterruptIn arrivee_in {ARRIVEE};
 #endif
@@ -39,6 +43,7 @@ namespace Move {
     bool arrivee = false;
     bool balise_gauche = false;
     bool balise_droite = false;
+    bool en_demi_tour = false;
     bool en_croisement = false;
     bool racourci_prevoir = false;
     bool racourci_gauche = false;
@@ -82,7 +87,7 @@ namespace Move {
         }
 
         if (rotation_360) {
-            return Err::URGENTE;
+            return Err::MAX;
         }
 
         if (fin_racourci && racourci_gauche) {
@@ -148,7 +153,7 @@ namespace Move {
             rotation_360 = true;
         }
 
-        if (l8) {
+        if (l8 || l7) {
             rotation_fini = true;
             rotation_360 = false;
         }
@@ -211,8 +216,29 @@ namespace Move {
             en_croisement = false;
             croisement_counter ++;
         }
+    }
 
 
+    void challenge_control() {
+        balise_counter();
+
+        if (croisement_counter >= 2 && !en_demi_tour) {
+            demi_tour_timer.reset();
+            demi_tour_timer.start();
+            en_demi_tour = true;
+        }
+
+       
+        if (demi_tour_timer.elapsed_time().count() > DEMI_TOUR_WAIT_TIME) {
+            demi_tour();
+
+            if (rotation_fini) {
+                en_demi_tour = false;
+                croisement_counter = 0;
+                demi_tour_timer.stop();
+                demi_tour_timer.reset();
+            }
+        }
     }
 
     static void racourci_control() {
@@ -231,6 +257,8 @@ namespace Move {
             DEBUG::print("racourci prevoir\r\n");
             balise_gauche = false;
             racourci_prevoir = true;
+            raccourci_prevoir_timer.reset();
+            raccourci_prevoir_timer.start();
             balise_gauche_counter ++;
         }
         
@@ -240,8 +268,14 @@ namespace Move {
             DEBUG::print("cancel racourci\r\n");
         }
 */     
- 
+
         if (racourci_prevoir) {
+            if (raccourci_prevoir_timer.elapsed_time().count() > RACCOURCI_PREVOIR_TIME) {
+                racourci_prevoir = false;
+                raccourci_prevoir_timer.stop();
+                return;
+            }
+
             if (LIR::croisement() || (LIR::piste_gauche() && LIR::piste_droite())) {
                 racourci_prevoir = false;
             }
@@ -347,6 +381,10 @@ namespace Move {
 #endif
 
         if (!arret) {
+#ifdef CHALLENGE_ENABLE
+            challenge_control();
+#endif
+
             error = pid_error();
 
 #ifdef RACCOURCI_ENABLE

@@ -43,5 +43,6 @@
 #define PRIORITE_ENABLE
 #define RACCOURCI_ENABLE
 #define RACCOURCI_GAUCHE
+#define CHALLENGE_ENABLE
 
 #endif
