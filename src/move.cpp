@@ -155,49 +155,41 @@ namespace Move {
     }
 
     static void priorite_control() {
+        Sonore::control();
         if (priorite) {
-            Sonore::control();
             DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
-
-           /* 
-            if (priorite_arret && balise_droite()) {
-                H::arret_motors();
-                arret = true;
-            }
 
             if (!arret && Sonore::obstacle_detected()) {
                 DEBUG::print("obstacle\r\n");
                 stop();
             }
-      */      
+            
             if (LIR::croisement()) {
                 priorite = false;
-                PID::set_max_out(1.0f);
+                PID::set_max_out(MAX_VITESSE);
                 DEBUG::print("croisement\r\n");
-                Sonore::stop();
+                //Sonore::stop();
             }
-/*
+
             if (arret && !Sonore::obstacle_detected()) {
                 DEBUG::print("mise en marche\r\n");
                 
                 priorite = false;
                 mise_en_marche();
-                Sonore::stop();
+                //Sonore::stop();
+                PID::set_max_out(MAX_VITESSE);
                 wait_us(MIS_EN_MARCHE_TIME);
             }
-            */
+            
         } else  if (LIR::balise_priorite() && !priorite) {
             priorite = true;
-
-            Sonore::start();
-            //PID::set_max_out(0.5f);
             DEBUG::print("Priorite\r\n");
         }
-        else {
-            if (Sonore::obstacle_detected()) {
-                DEBUG::print("obstacle\r\n");
-                stop();
-            }
+        else if (Sonore::obstacle_proche()) {
+            DEBUG::print("obstacle proche\r\n");
+            PID::set_max_out(FREIN_VITESSE);
+        } else {
+            PID::set_max_out(MAX_VITESSE);
         }
     }
 
@@ -219,6 +211,8 @@ namespace Move {
             en_croisement = false;
             croisement_counter ++;
         }
+
+
     }
 
     static void racourci_control() {
@@ -346,9 +340,9 @@ namespace Move {
         arrivee_control();
         Sonore::debug();
 
-        // priorite_control();
 #ifdef PRIORITE_ENABLE
-        if (!racourci && !fin_racourci && !racourci_pris) {
+        if (!racourci && !fin_racourci) {
+            priorite_control();
         }
 #endif
 
@@ -377,6 +371,7 @@ namespace Move {
     }
 
     void init() {
+        Sonore::start();
         init_arrivee_timer();
         mise_en_marche();
     }

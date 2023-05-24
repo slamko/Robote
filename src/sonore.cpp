@@ -19,7 +19,7 @@ namespace Sonore {
     bool echo_rise_act {false};
     bool echo_fall_act {false};
 
-    float distance = OBSTACLE_DETECT_DIST + 1.0f;
+    float distance = OBSTACLE_PROCHE_DIST + 1.0f;
     usec echo_pulse_dur;
 
     DigitalOut trig {TRIG};
