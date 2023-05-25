@@ -21,7 +21,7 @@ namespace Move {
     const usec RACOURCI_TIME = 150000us;
     const int MIS_EN_MARCHE_TIME = usec(5000us).count(); 
     const int RACCOURCI_PREVOIR_TIME = usec(500000us).count(); 
-    const int DEMI_TOUR_WAIT_TIME = usec(300000us).count(); 
+    const int DEMI_TOUR_WAIT_TIME = usec(150000us).count(); 
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
@@ -78,7 +78,8 @@ namespace Move {
     static error_t pid_error() {
         using namespace LIR;
 
-        DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8);
+       // DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8);
+        DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8);
 
         if (racourci && racourci_gauche) {
             return Err::URGENTE;
@@ -219,22 +220,37 @@ namespace Move {
     }
 
 
+    static inline void demi_tour_start() {
+        demi_tour_timer.reset();
+        demi_tour_timer.start();
+        en_demi_tour = true;    
+    }
+
     void challenge_control() {
         balise_counter();
 
-        if (croisement_counter >= 2 && !en_demi_tour) {
-            demi_tour_timer.reset();
-            demi_tour_timer.start();
-            en_demi_tour = true;
+        if (croisement_counter >= 1 && !en_demi_tour) {
+            demi_tour_start();
+            DEBUG::print("Demi tour start");
         }
 
-       
+/*
+        if (balise_gauche_counter >= 1 && !en_demi_tour) {
+            demi_tour_start();
+        }
+*/
+
         if (demi_tour_timer.elapsed_time().count() > DEMI_TOUR_WAIT_TIME) {
             demi_tour();
 
             if (rotation_fini) {
+                rotation_fini = false;
                 en_demi_tour = false;
-                croisement_counter = 0;
+                DEBUG::print("elapsed time %d\r\n", demi_tour_timer.elapsed_time().count());
+                DEBUG::print("Demi tour fini");
+                if (croisement_counter >= 1) {
+                    croisement_counter = 0;
+                }
                 demi_tour_timer.stop();
                 demi_tour_timer.reset();
             }
