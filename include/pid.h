@@ -27,7 +27,8 @@
 #define KI_MAX 0.0f
 #define KD_MAX 10.0f // 0.75
 
-#define MAX_VITESSE 0.92f
+#define ACC_VITESSE 1.0f
+#define MAX_VITESSE 0.94f
 #define FREIN_VITESSE 0.85f
 
 namespace PID {

@@ -15,7 +15,7 @@ namespace Move {
     #ifdef DEBUG_MODE
     const usec PID_Sample_Rate = 500000us; 
     #else
-    const usec PID_Sample_Rate = 4600us; 
+    const usec PID_Sample_Rate = 4900us; 
     #endif
 
     const usec RACOURCI_TIME = 150000us;
@@ -51,12 +51,26 @@ namespace Move {
     bool fin_racourci = false;
     bool rotation_360 = false;
     bool racourci = false;
+    bool accelere = false;
     bool en_raccourci = false;
     bool rotation_fini = false;
+    bool demi_tour_l8_un = false;
+    bool demi_tour_l8_nul = false;
+    bool demi_tour_l8_deux = false;
+    bool demi_tour_gauche = false;
 
     unsigned int croisement_counter;
     unsigned int balise_droite_counter;
     unsigned int balise_gauche_counter;
+
+    static Callback<bool()> challenges = {
+        []() {
+            return croisement_counter >= 1;
+        },
+        []() {
+            return balise_droite_counter >= INT_MAX;
+        }
+    };
 
     void mise_en_marche() {
         if (!arret) return;
@@ -87,8 +101,10 @@ namespace Move {
             return -Err::URGENTE;
         }
 
-        if (rotation_360) {
-            return Err::MAX;
+        if (rotation_360 && demi_tour_gauche) {
+            return Err::URGENTE;
+        } else if (rotation_360) {
+            return -Err::URGENTE;
         }
 
         if (fin_racourci && racourci_gauche) {
@@ -151,12 +167,61 @@ namespace Move {
         using namespace LIR;
 
         if (!rotation_360) {
+            wait_us(100000);
             rotation_360 = true;
+        }
+
+        if (l1 || l2) {
+            rotation_fini = true;
+            rotation_360 = false;
+        }
+    }
+
+    static void demi_tour_balise_gauche() {
+        using namespace LIR;
+
+        if (!rotation_360) {
+            rotation_360 = true;
+        }
+
+        if (l1 || l2) {
+            rotation_fini = true;
+            rotation_360 = false;
+        }
+    }
+
+    static void demi_tour_balise_droite() {
+        using namespace LIR;
+
+        if (!rotation_360) {
+            rotation_360 = true;
+            demi_tour_gauche = true;
         }
 
         if (l8 || l7) {
             rotation_fini = true;
             rotation_360 = false;
+            demi_tour_gauche = false;
+        }
+    }
+
+    static void demi_tour_croisement() {
+        using namespace LIR;
+
+        if (!rotation_360) {
+            rotation_360 = true;
+        }
+
+        if (l8 || l7 && !demi_tour_l8_un) {
+            demi_tour_l8_un = true;
+        } if (demi_tour_l8_un && !l8 && !demi_tour_l8_nul) {
+            demi_tour_l8_nul = true;
+        } if (demi_tour_l8_nul && l8) {
+            rotation_360 = false;
+            rotation_fini = true;
+            demi_tour_l8_un = false;
+            demi_tour_l8_nul = false;
+            demi_tour_l8_deux = false;
         }
     }
 
@@ -219,11 +284,11 @@ namespace Move {
         }
     }
 
-
     static inline void demi_tour_start() {
         demi_tour_timer.reset();
         demi_tour_timer.start();
         en_demi_tour = true;    
+        DEBUG::print("Demi tour start");
     }
 
     void challenge_control() {
@@ -231,17 +296,24 @@ namespace Move {
 
         if (croisement_counter >= 1 && !en_demi_tour) {
             demi_tour_start();
-            DEBUG::print("Demi tour start");
         }
 
-/*
         if (balise_gauche_counter >= 1 && !en_demi_tour) {
             demi_tour_start();
         }
+/*
+        if (balise_droite_counter >= 1 && !en_demi_tour) {
+            demi_tour_start();
+        }
 */
-
-        if (demi_tour_timer.elapsed_time().count() > DEMI_TOUR_WAIT_TIME) {
-            demi_tour();
+        if (demi_tour_timer.elapsed_time().count() > 0) {
+            if (balise_gauche_counter >= 1) {
+                demi_tour_balise_gauche();
+            } if (balise_droite_counter >= 1) {
+                demi_tour_balise_droite();
+            } if (croisement_counter >= 1) {
+                demi_tour();
+            }
 
             if (rotation_fini) {
                 rotation_fini = false;
@@ -250,6 +322,12 @@ namespace Move {
                 DEBUG::print("Demi tour fini");
                 if (croisement_counter >= 1) {
                     croisement_counter = 0;
+                }
+                if (balise_gauche_counter >= 1) {
+                    balise_gauche_counter = 0;
+                }
+                if (balise_droite_counter >= 1) {
+                    balise_droite_counter = 0;
                 }
                 demi_tour_timer.stop();
                 demi_tour_timer.reset();
@@ -373,6 +451,14 @@ namespace Move {
         }
     }
 
+    static void accelerate_control() {
+        if (!accelere && LIR::balise_priorite() && !Sonore::obstacle_proche()) {
+            PID::set_max_out(ACC_VITESSE);
+        } else if (accelere && (LIR::balise_priorite() || LIR::balise_raccourci() || LIR::croisement())) {
+            PID::set_max_out(MAX_VITESSE);
+        }
+    }
+
     static void arrivee_control() {
         if (!arrivee) return;
 
@@ -390,17 +476,14 @@ namespace Move {
         arrivee_control();
         Sonore::debug();
 
-#ifdef PRIORITE_ENABLE
-        if (!racourci && !fin_racourci) {
-            priorite_control();
-        }
-#endif
-
         if (!arret) {
 #ifdef CHALLENGE_ENABLE
             challenge_control();
 #endif
 
+#ifdef ACCELERATE_ENABLE
+            accelerate_control();
+#endif
             error = pid_error();
 
 #ifdef RACCOURCI_ENABLE
@@ -410,6 +493,12 @@ namespace Move {
             PID::calcul(error, prev_error);
             prev_error = error;
         }
+
+    #ifdef PRIORITE_ENABLE
+        if (!racourci && !fin_racourci && !en_demi_tour) {
+            priorite_control();
+        }
+    #endif
 
         pid_timer.reset();
     }
