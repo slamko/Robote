@@ -42,8 +42,8 @@ namespace LIR {
         l6.read();
         l7.read();
         l8.read();
-        // lg.read();
-        // ld.read();
+        lg.read();
+        ld.read();
     }
 
     bool nul() {
@@ -96,5 +96,5 @@ namespace LIR {
     Digital l7{LIR7};
     Digital l8{LIR8};
     
- //   Digital lg{LG}, ld {LD};
+    Digital lg{LG}, ld {LD};
 }

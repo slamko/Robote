@@ -8,6 +8,9 @@
 #include "include/events.h"
 #include <stdio.h>
 
+//InterruptIn d(A4);
+//bool rise = false;
+
 static void init() {
     H::init();
     Move::init();
@@ -17,9 +20,15 @@ static void init() {
 
 int main()
 {
+    //d.rise([]() {rise = true;});
     init();
     
     while (1) {
-       Move::control();            
+        /*if (rise) {
+            printf("ererherher\r\n");
+            rise = false;
+        }*/
+        Move::control();   
+                
     }
 }

@@ -22,8 +22,8 @@
 #define LIR6 A2
 #define LIR7 A1
 #define LIR8 D11
-#define LG A1
-#define LD A2
+#define LG D12
+#define LD D2
 
 #define B D9
 #define R D10
@@ -37,13 +37,13 @@
 #define LED D13
 
 #define PISTE_BLANCHE true
-// #define DEBUG_MODE
+//#define DEBUG_MODE
 // #define DEBUG_SONORE
 
 //#define PRIORITE_ENABLE
 #define RACCOURCI_ENABLE
 #define RACCOURCI_GAUCHE
-//#define CHALLENGE_ENABLE
+#define CHALLENGE_ENABLE
 #define ACCELERATE_ENABLE
 
 #endif

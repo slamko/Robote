@@ -43,8 +43,13 @@ namespace DEBUG {
         sprintf(format + strlen(format), "\r\n");
     }
 
-
+    void d_assert(bool pred) {
+        assert(pred);
+    }
+    
     #else 
+
+    void d_assert(bool pred) { }
 
     void print(const char *msg, ...) {}
 

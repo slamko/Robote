@@ -64,30 +64,32 @@ namespace Move {
     unsigned int balise_gauche_counter;
     size_t cur_challenge;
 
-/*
-    static Callback<bool()> challenges = {
+    static void demi_tour_balise_gauche();
+    static void demi_tour_balise_droite();
+    static void demi_tour_croisement();
+
+    static Callback<bool()> challenges_pred[] = {
         []() {
             return croisement_counter >= 1;
-        },
-        []() {
-            return balise_droite_counter >= INT_MAX;
         }
     };
 
-    static Callback<void()> challenges_reset = {
+    static Callback<void()> challenges_reset[] = {
         []() {
             croisement_counter = 0;
-        },
-        []() {
-            balise_droite_counter = 0;
         }
     };
-*/
+
+    static Callback<void()> challenges_actions[] = {
+        &demi_tour_croisement
+    };
+
     void mise_en_marche() {
         if (!arret) return;
 
         pid_timer.reset();
         pid_timer.start();
+        Sonore::start();
 
         arret = false;
         H::mise_en_marche();
@@ -103,8 +105,8 @@ namespace Move {
     static error_t pid_error() {
         using namespace LIR;
 
-       // DEBUG::print("%d %d %d %d %d %d %d %d\r\n", (int)l1, (int)l2, (int)l3, (int)l4, (int)l5, (int)l6, (int)l7, (int)l8);
         DEBUG::fprint<int, int, int, int, int, int, int, int>(l1, l2, l3, l4, l5, l6, l7, l8);
+        DEBUG::fprint<int, int>(ld, lg);
 
         if (racourci && racourci_gauche) {
             return Err::URGENTE;
@@ -306,51 +308,29 @@ namespace Move {
     void challenge_control() {
         balise_counter();
 
-/*
-        assert(ARR_SIZE(challenges) == ARR_SIZE(challenges_reset));
+        DEBUG::d_assert(ARR_SIZE(challenges_pred) == ARR_SIZE(challenges_reset));
 
-        for (int i = 0; i < ARR_SIZE(challenges); ) {
-            if (challenges[]()) {
-
+        if (!en_demi_tour) {
+            for (int i = 0; i < ARR_SIZE(challenges_pred); i++) {
+                if (challenges_pred[i]()) {
+                    cur_challenge = i;
+                    demi_tour_start();
+                }
             }
         }
-*/
-        if (croisement_counter >= 1 && !en_demi_tour) {
-            demi_tour_start();
-        }
-/*
-        if (balise_gauche_counter >= 1 && !en_demi_tour) {
-            demi_tour_start();
-        }
-        */
-/*
-        if (balise_droite_counter >= 1 && !en_demi_tour) {
-            demi_tour_start();
-        }
-*/
+
         if (demi_tour_timer.elapsed_time().count() > RACCOURCI_PREVOIR_TIME) {
-            if (balise_gauche_counter >= 1) {
-                demi_tour_balise_gauche();
-            } if (balise_droite_counter >= 1) {
-                demi_tour_balise_droite();
-            } if (croisement_counter >= 1) {
-                demi_tour();
-            }
+            challenges_actions[cur_challenge]();
 
             if (rotation_fini) {
                 rotation_fini = false;
                 en_demi_tour = false;
                 DEBUG::print("elapsed time %d\r\n", demi_tour_timer.elapsed_time().count());
                 DEBUG::print("Demi tour fini");
-                if (croisement_counter >= 1) {
-                    croisement_counter = 0;
-                }
-                if (balise_gauche_counter >= 1) {
-                    balise_gauche_counter = 0;
-                }
-                if (balise_droite_counter >= 1) {
-                    balise_droite_counter = 0;
-                }
+                
+                challenges_reset[cur_challenge]();
+                
+
                 demi_tour_timer.stop();
                 demi_tour_timer.reset();
             }
@@ -527,18 +507,26 @@ namespace Move {
         pid_timer.reset();
     }
 
+    static void interrupteur() {
+
+    }
+
     static void init_arrivee_timer() {
 #ifndef DEBUG_MODE
-
+        //arret = true;
         arrivee_in.mode(PullNone);
         arrivee_in.rise([]() {
-            arrivee = true;
+                arrivee = true;
+            if (false) {
+                mise_en_marche();
+            } else {
+            }
         });
 #endif
     }
 
     void init() {
-        Sonore::start();
+        
         init_arrivee_timer();
         mise_en_marche();
     }

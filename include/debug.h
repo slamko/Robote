@@ -41,7 +41,7 @@ namespace DEBUG {
     }
 
     #else
-     void print(const char *msg, ...);
+    void print(const char *msg, ...);
 
     template <class ...Args>
     void nb_print(const char *msg, Args ...args) { }
@@ -57,7 +57,7 @@ namespace DEBUG {
     }
     #endif    
 
-
+    void d_assert(bool pred);
     void init();
 }
 
