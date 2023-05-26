@@ -40,10 +40,10 @@
 // #define DEBUG_MODE
 // #define DEBUG_SONORE
 
-#define PRIORITE_ENABLE
+//#define PRIORITE_ENABLE
 #define RACCOURCI_ENABLE
 #define RACCOURCI_GAUCHE
-#define CHALLENGE_ENABLE
+//#define CHALLENGE_ENABLE
 #define ACCELERATE_ENABLE
 
 #endif

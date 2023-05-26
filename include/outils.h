@@ -15,6 +15,7 @@ namespace Outil {
     }
 }
 
+#define ARR_SIZE(ARR) (sizeof(ARR) / sizeof(*ARR))
 
 using usec = std::chrono::microseconds;
 using usecf = std::chrono::duration<float, std::micro>;

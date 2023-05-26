@@ -62,7 +62,9 @@ namespace Move {
     unsigned int croisement_counter;
     unsigned int balise_droite_counter;
     unsigned int balise_gauche_counter;
+    size_t cur_challenge;
 
+/*
     static Callback<bool()> challenges = {
         []() {
             return croisement_counter >= 1;
@@ -72,6 +74,15 @@ namespace Move {
         }
     };
 
+    static Callback<void()> challenges_reset = {
+        []() {
+            croisement_counter = 0;
+        },
+        []() {
+            balise_droite_counter = 0;
+        }
+    };
+*/
     void mise_en_marche() {
         if (!arret) return;
 
@@ -167,7 +178,6 @@ namespace Move {
         using namespace LIR;
 
         if (!rotation_360) {
-            wait_us(100000);
             rotation_360 = true;
         }
 
@@ -210,6 +220,7 @@ namespace Move {
 
         if (!rotation_360) {
             rotation_360 = true;
+            demi_tour_gauche = true;
         }
 
         if (l8 || l7 && !demi_tour_l8_un) {
@@ -222,6 +233,7 @@ namespace Move {
             demi_tour_l8_un = false;
             demi_tour_l8_nul = false;
             demi_tour_l8_deux = false;
+            demi_tour_gauche = false;
         }
     }
 
@@ -294,19 +306,29 @@ namespace Move {
     void challenge_control() {
         balise_counter();
 
+/*
+        assert(ARR_SIZE(challenges) == ARR_SIZE(challenges_reset));
+
+        for (int i = 0; i < ARR_SIZE(challenges); ) {
+            if (challenges[]()) {
+
+            }
+        }
+*/
         if (croisement_counter >= 1 && !en_demi_tour) {
             demi_tour_start();
         }
-
+/*
         if (balise_gauche_counter >= 1 && !en_demi_tour) {
             demi_tour_start();
         }
+        */
 /*
         if (balise_droite_counter >= 1 && !en_demi_tour) {
             demi_tour_start();
         }
 */
-        if (demi_tour_timer.elapsed_time().count() > 0) {
+        if (demi_tour_timer.elapsed_time().count() > RACCOURCI_PREVOIR_TIME) {
             if (balise_gauche_counter >= 1) {
                 demi_tour_balise_gauche();
             } if (balise_droite_counter >= 1) {
@@ -454,8 +476,10 @@ namespace Move {
     static void accelerate_control() {
         if (!accelere && LIR::balise_priorite() && !Sonore::obstacle_proche()) {
             PID::set_max_out(ACC_VITESSE);
+            accelere = true;
         } else if (accelere && (LIR::balise_priorite() || LIR::balise_raccourci() || LIR::croisement())) {
             PID::set_max_out(MAX_VITESSE);
+            accelere = false;
         }
     }
 
