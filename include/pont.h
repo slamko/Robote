@@ -23,7 +23,7 @@ namespace H {
 
     void moteur_gauche_avant();
 
-    void mise_en_marche();
+    void marche();
 
     void arret();
 

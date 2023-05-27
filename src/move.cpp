@@ -91,8 +91,9 @@ namespace Move {
         pid_timer.start();
         Sonore::start();
 
+        DEBUG:fprint("Mise en marche");
         arret = false;
-        H::mise_en_marche();
+        H::marche();
     }
 
     void stop() {
@@ -468,6 +469,7 @@ namespace Move {
 
         if (!arret) {
             arret = true;
+            DEBUG:fprint("Arrivee\r\n");
             pid_timer.stop();
             H::arrivee();
         }
@@ -477,7 +479,7 @@ namespace Move {
         if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
 
         LIR::read();
-        arrivee_control();
+       // arrivee_control();
         Sonore::debug();
 
         if (!arret) {
@@ -508,26 +510,24 @@ namespace Move {
     }
 
     static void interrupteur() {
-
+       
+        if (arret) {
+            mise_en_marche();
+        } else {
+            arrivee = true;
+        }
     }
 
     static void init_arrivee_timer() {
-#ifndef DEBUG_MODE
-        //arret = true;
         arrivee_in.mode(PullNone);
-        arrivee_in.rise([]() {
-                arrivee = true;
-            if (false) {
-                mise_en_marche();
-            } else {
-            }
-        });
+        arrivee_in.rise(&interrupteur);
+#ifndef DEBUG_MODE
 #endif
     }
 
     void init() {
-        
+        arret = true;
         init_arrivee_timer();
-        mise_en_marche();
+        //mise_en_marche();
     }
 }

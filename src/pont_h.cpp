@@ -67,7 +67,7 @@ namespace H {
         H::moteur_gauche(0.0f);
     }
 
-    void mise_en_marche() {
+    void marche() {
         moteur_droit_avant();
         moteur_gauche_avant();
     }

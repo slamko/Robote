@@ -15,7 +15,7 @@ namespace Move {
 
     void control();
 
-    void mise_en_marche();
+   // void mise_en_marche();
     
     void stop();
 
