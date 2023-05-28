@@ -17,6 +17,8 @@ namespace Outil {
 
 #define ARR_SIZE(ARR) (sizeof(ARR) / sizeof(*ARR))
 
+#define GET_BIT(X, BIT) ((X & (1 << BIT)) >> BIT)
+
 using usec = std::chrono::microseconds;
 using usecf = std::chrono::duration<float, std::micro>;
 using useci = std::chrono::duration<unsigned int, std::micro>;

@@ -3,6 +3,9 @@
 #include "include/rc5.h"
 #include "include/move.h"
 #include "include/outils.h"
+#include "include/debug.h"
+
+//#include <map>
 
 namespace Telecommande {
     static InterruptIn signal {RC5};
@@ -10,64 +13,65 @@ namespace Telecommande {
     static const int long_pulse = usec(1778).count();
     static const int short_pulse = usec(889).count();
     static const int med_pulse = (long_pulse + short_pulse) / 2;
+    static const usec max_long_pulse = 3000us; 
+    static const uint8_t play_code = 53;
+
+    static constexpr uint8_t COMMAND_LEN = 14;
 
     bool decoding = false;
-    bool decoded = false;
     bool start_bit1 = false;
     bool start_bit2 = false;
 
-    static uint8_t command[14];
-    static uint8_t play_code = 53;
-    uint8_t cur_bit_num;
+    static uint16_t command = 0;
+    uint8_t cur_bit;
 
     static inline void clock_restart() {
         clock.reset();
         clock.start();
     }
 
-    bool check_good_startcode() {
-        return (command[0] && command[1]);
-    }
-
-    uint8_t binarr_to_num(uint8_t *binarr) {
-        uint8_t res = 0;
-
-        for (int i = 0; i < 6; i++) {
-            res = (binarr[i] << (5 - i)) | res;
-        }
-        return res;
+    bool good_startcode() {
+        return ((command & (1 << 0)) && (command & (1 << 1)));
     }
 
     void decode_bit(uint8_t bit) {
-        command[cur_bit_num] = bit;
-        cur_bit_num++;
+        if (bit) {
+            command |= (bit << cur_bit);
+        }
+        cur_bit++;
 
-        if (cur_bit_num >= ARR_SIZE(command)) {
+        if (cur_bit >= COMMAND_LEN) {
             decoding = false;
-            cur_bit_num = 0;
+            cur_bit = 0;
             clock.stop();
+            clock.reset();
 
-            if (check_good_startcode()) {
-                if (binarr_to_num(command + 8) == play_code) {
+            if (good_startcode()) {
+                if (((command >> 8) & 0xFF) == play_code) {
                     Move::mise_en_marche();
                 }
             }
-
-            memset(command, 0, sizeof(command));
+            command = 0;
+            return;
         }
 
         clock_restart();
     }
 
+    void decode_reset() {
+        command = 0;
+        decoding = true;
+        clock_restart();
+        cur_bit = 0;
+    }
+
     void decode_fall() {
-        if (!decoding) {
-            decoding = true;
-            clock_restart();
-            cur_bit_num = 0;
-            return;
+        if (!decoding || clock.elapsed_time() > max_long_pulse) {
+            decode_reset();
+            return;    
         }
 
-        if (command[cur_bit_num] && clock.elapsed_time().count() < med_pulse) {
+        if (GET_BIT(command, cur_bit) && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
         }
@@ -78,7 +82,7 @@ namespace Telecommande {
     void decode_rise() {
         if (!decoding) return;
 
-        if (cur_bit_num && !command[cur_bit_num] && clock.elapsed_time().count() < med_pulse) {
+        if (cur_bit && !GET_BIT(command, cur_bit) && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
         }
@@ -92,10 +96,31 @@ namespace Telecommande {
         signal.fall(&decode_fall);
     }
 
-    void control() {
-        /*if (decoded) {
-            if (command)
-            decoded = false;
-        }*/
-    }
+/*
+    class RC5 {
+    public:
+        RC5(PinName pin, std::map<uint8_t, Callback<void()>> commands);
+    
+    private:
+        InterruptIn signal;
+        Timer clock;
+        bool decoding = false;
+
+        std::map<uint8_t, Callback<void()>> commands;
+        uint16_t command;
+        uint8_t cur_bit;
+    };
+
+    RC5::RC5(PinName pin, std::map<uint8_t, Callback<void()>> commands) 
+        : signal{pin}, commands{commands} 
+    {
+        signal.mode(PullNone);
+        signal.rise(&decode_rise);
+        signal.fall(&decode_fall);
+    };
+
+    RC5 telecom {D13, {
+        {53, &Move::mise_en_marche}
+    }};
+    */
 }
