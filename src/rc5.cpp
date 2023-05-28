@@ -19,7 +19,6 @@ namespace Telecommande {
     static uint8_t command[14];
     static uint8_t play_code = 53;
     uint8_t cur_bit_num;
-    bool prev_bit;
 
     static inline void clock_restart() {
         clock.reset();
@@ -44,12 +43,13 @@ namespace Telecommande {
         cur_bit_num++;
 
         if (cur_bit_num >= ARR_SIZE(command)) {
-            clock.stop();
             decoding = false;
+            cur_bit_num = 0;
+            clock.stop();
 
             if (check_good_startcode()) {
                 if (binarr_to_num(command + 8) == play_code) {
-                    Move::marche();
+                    Move::mise_en_marche();
                 }
             }
 
@@ -67,7 +67,7 @@ namespace Telecommande {
             return;
         }
 
-        if (command[cur_bit_num] && clock.elapse_time().count() < med_time) {
+        if (command[cur_bit_num] && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
         }
@@ -78,7 +78,7 @@ namespace Telecommande {
     void decode_rise() {
         if (!decoding) return;
 
-        if (!command[cur_bit_num] && clock.elapsed_time().count() < med_time) {
+        if (cur_bit_num && !command[cur_bit_num] && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
         }

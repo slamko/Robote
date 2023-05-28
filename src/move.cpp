@@ -91,7 +91,7 @@ namespace Move {
         pid_timer.start();
         Sonore::start();
 
-        DEBUG:fprint("Mise en marche");
+        DEBUG::print("Mise en marche");
         arret = false;
         H::marche();
     }
@@ -469,7 +469,7 @@ namespace Move {
 
         if (!arret) {
             arret = true;
-            DEBUG:fprint("Arrivee\r\n");
+            DEBUG::print("Arrivee\r\n");
             pid_timer.stop();
             H::arrivee();
         }
