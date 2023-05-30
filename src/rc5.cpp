@@ -16,18 +16,19 @@ namespace Telecommande {
     static const usec max_long_pulse = 3000us; 
     static const uint8_t play_code = 53;
 
-    static constexpr uint8_t COMMAND_LEN = 14;
+    static constexpr int COMMAND_LEN = 14;
 
     bool decoding = false;
+    bool decoded = false;
     bool start_bit1 = false;
     bool start_bit2 = false;
 
     static uint16_t command = 0;
-    uint8_t cur_bit;
+    int cur_bit;
 
     static inline void clock_restart() {
         clock.reset();
-        clock.start();
+        //clock.start();
     }
 
     bool good_startcode() {
@@ -42,6 +43,7 @@ namespace Telecommande {
 
         if (cur_bit >= COMMAND_LEN) {
             decoding = false;
+            decoded = true;
             cur_bit = 0;
             clock.stop();
             clock.reset();
@@ -51,7 +53,6 @@ namespace Telecommande {
                     Move::mise_en_marche();
                 }
             }
-            command = 0;
             return;
         }
 
@@ -62,11 +63,12 @@ namespace Telecommande {
         command = 0;
         decoding = true;
         clock_restart();
+        clock.start();
         cur_bit = 0;
     }
 
     void decode_fall() {
-        if (!decoding || clock.elapsed_time() > max_long_pulse) {
+        if (!decoding /*|| clock.elapsed_time() > max_long_pulse*/) {
             decode_reset();
             start_bit1 = true;
             return;    
@@ -77,17 +79,19 @@ namespace Telecommande {
             return;
         }
 
+        //start_bit1 = true;
         decode_bit(0);
     }
 
     void decode_rise() {
         if (!decoding) return;
-        start_bit2 = true;
+
         if (cur_bit && !GET_BIT(command, cur_bit) && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
         }
 
+        start_bit2 = true;
         decode_bit(1);
     }
 
@@ -98,13 +102,19 @@ namespace Telecommande {
     }
 
     void control() {
+       
         if (start_bit1) {
-            DEBUG::print("Fall 1\r\n");
+            DEBUG::print("Fall\r\n");
             start_bit1 = false;
         }
         if (start_bit2) {
             DEBUG::print("Rise\r\n");
             start_bit2 = false;
+        }
+        
+        if (decoded) {
+            DEBUG::print("com %d\r\n", command);
+            decoded = false;
         }
     }
     

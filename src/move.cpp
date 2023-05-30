@@ -28,6 +28,7 @@ namespace Move {
     static Timer demi_tour_timer {};
     static Timer arret_timer {};
     static Timer interrupt_timer {};
+    static Timer arrivee_timer {};
     static Timer raccourci_prevoir_timer {};
 #ifndef DEBUG_MODE
     static InterruptIn arrivee_in {ARRIVEE};
@@ -59,11 +60,19 @@ namespace Move {
     bool demi_tour_l8_nul = false;
     bool demi_tour_l8_deux = false;
     bool demi_tour_gauche = false;
+    bool double_gauche_balise;
+    bool double_droite_balise;
+    bool premier = true;
 
+    unsigned int double_gauche_balise_counter;
+    unsigned int double_droite_balise_counter;
     unsigned int croisement_counter;
     unsigned int balise_droite_counter;
     unsigned int balise_gauche_counter;
     size_t cur_challenge;
+    const unsigned int INTERRUPT_AWAIT_TIME = 500000;
+    long pid_timer_diff = INTERRUPT_AWAIT_TIME + 1;
+    unsigned int last_pid_timer = 0;
 
     static void demi_tour_balise_gauche();
     static void demi_tour_balise_droite();
@@ -72,17 +81,31 @@ namespace Move {
     static Callback<bool()> challenges_pred[] = {
         []() {
             return croisement_counter >= 1;
+        },
+        [] () {
+            return double_gauche_balise_counter >= 1;
+        },
+        [] () {
+            return double_droite_balise_counter >= 1;
         }
     };
 
     static Callback<void()> challenges_reset[] = {
         []() {
             croisement_counter = 0;
+        },
+        [] () {
+            double_gauche_balise_counter = 0;
+        },
+        [] () {
+            double_droite_balise_counter = 0;
         }
     };
 
     static Callback<void()> challenges_actions[] = {
-        &demi_tour_croisement
+        &demi_tour_croisement,
+        &demi_tour_balise_droite,
+        &demi_tour_balise_gauche
     };
 
     void mise_en_marche() {
@@ -93,6 +116,7 @@ namespace Move {
         Sonore::start();
 
         DEBUG::print("Mise en marche");
+        arrivee = false;
         arret = false;
         H::marche();
     }
@@ -298,6 +322,24 @@ namespace Move {
             en_croisement = false;
             croisement_counter ++;
         }
+
+        if (!double_gauche_balise && LIR::balise_raccourci() && LIR::lg) {
+            double_gauche_balise = true;
+        }
+
+        if (double_gauche_balise && !LIR::balise_raccourci() && !LIR::lg) {
+            double_gauche_balise = false;
+            double_gauche_balise_counter ++;
+        }
+
+        if (!double_droite_balise && LIR::balise_priorite() && LIR::ld) {
+            double_droite_balise = true;
+        }
+
+        if (double_droite_balise && !LIR::balise_priorite() && !LIR::ld) {
+            double_droite_balise = false;
+            double_droite_balise_counter ++;
+        }
     }
 
     static inline void demi_tour_start() {
@@ -471,7 +513,7 @@ namespace Move {
         if (!arret) {
             arret = true;
             DEBUG::print("Arrivee\r\n");
-            pid_timer.stop();
+            pid_timer.reset();
             H::arrivee();
         }
     }
@@ -511,15 +553,36 @@ namespace Move {
     }
 
     static void interrupteur() {
+        //pid_timer_diff = pid_timer.elapsed_time().count() - last_pid_timer;
+/*
+        if (pid_timer_diff < 0) {
+            last_pid_timer = 0;
+        }
+*/
+
+        //if (pid_timer_diff > 0 && pid_timer_diff < INTERRUPT_AWAIT_TIME) return;
 
         if (arret) {
+            if (arrivee_timer.elapsed_time().count() < INTERRUPT_AWAIT_TIME && !premier) return;
+            if (premier) {
+                premier = false;
+            }
+
+            mise_en_marche();
             interrupt_timer.reset();
             interrupt_timer.start();
-            mise_en_marche();
+            
+            arrivee_timer.stop();
+            arrivee_timer.reset();
+            //last_pid_timer = pid_timer.elapsed_time().count();
         } else {
-            if (interrupt_timer.elapsed_time().count() < 1000000) return;
-            interrupt_timer.reset();
+            if (interrupt_timer.elapsed_time().count() < INTERRUPT_AWAIT_TIME) return;
             interrupt_timer.stop();
+            interrupt_timer.reset();
+
+            arrivee_timer.reset();
+            arrivee_timer.start();
+            //last_pid_timer = pid_timer.elapsed_time().count();
             arrivee = true;
         }
     }

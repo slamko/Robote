@@ -30,7 +30,8 @@ int main()
             rise = false;
         }
         */
-        //Telecommande::control();
+       // Telecommande::control();
+       // wait_us(10000);
         Move::control();   
                 
     }
