@@ -29,7 +29,7 @@
 #define R D10
 #define Y D11
 #define ARRIVEE A7
-#define RC5 D2
+#define RC5_pin D2
 
 #define OUTL D12
 #define OUTR D2
@@ -45,5 +45,7 @@
 //#define RACCOURCI_GAUCHE
 //#define CHALLENGE_ENABLE
 //#define ACCELERATE_ENABLE
+//#define USE_RC5
+#define USE_SIRC
 
 #endif
