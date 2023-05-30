@@ -11,7 +11,7 @@
 static void init() {
     H::init();
     Move::init();
-    //Telecommande::init();
+    Telecommande::init();
     Sonore::init();
 }
 
@@ -30,7 +30,7 @@ int main()
             rise = false;
         }
         */
-       // Telecommande::control();
+        //Telecommande::debug();
        // wait_us(10000);
         Move::control();   
                 

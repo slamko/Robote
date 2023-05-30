@@ -44,6 +44,6 @@
 //#define RACCOURCI_ENABLE
 //#define RACCOURCI_GAUCHE
 //#define CHALLENGE_ENABLE
-#define ACCELERATE_ENABLE
+//#define ACCELERATE_ENABLE
 
 #endif

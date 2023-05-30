@@ -118,6 +118,15 @@ namespace Move {
         DEBUG::print("Mise en marche");
         arrivee = false;
         arret = false;
+        if (premier) {
+                premier = false;
+            }
+
+            interrupt_timer.reset();
+            interrupt_timer.start();
+            
+            arrivee_timer.stop();
+            arrivee_timer.reset();
         H::marche();
     }
 
@@ -564,16 +573,8 @@ namespace Move {
 
         if (arret) {
             if (arrivee_timer.elapsed_time().count() < INTERRUPT_AWAIT_TIME && !premier) return;
-            if (premier) {
-                premier = false;
-            }
-
             mise_en_marche();
-            interrupt_timer.reset();
-            interrupt_timer.start();
             
-            arrivee_timer.stop();
-            arrivee_timer.reset();
             //last_pid_timer = pid_timer.elapsed_time().count();
         } else {
             if (interrupt_timer.elapsed_time().count() < INTERRUPT_AWAIT_TIME) return;

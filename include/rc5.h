@@ -4,6 +4,6 @@
 namespace Telecommande {
     void init();
 
-    void control();
+    void debug();
 }
 #endif

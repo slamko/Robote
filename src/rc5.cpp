@@ -21,6 +21,7 @@ namespace Telecommande {
     bool decoding = false;
     bool decoded = false;
     bool start_bit1 = false;
+    bool bootstrapped = false;
     bool start_bit2 = false;
 
     static uint16_t command = 0;
@@ -95,14 +96,25 @@ namespace Telecommande {
         decode_bit(1);
     }
 
-    void init() {
-        signal.mode(PullNone);
-        signal.rise(&decode_rise);
-        signal.fall(&decode_fall);
+    void bootstrap() {
+        if (bootstrapped) return;
+        bootstrapped = true;
+        Move::mise_en_marche();
     }
 
-    void control() {
-       
+    void init() {
+        signal.mode(PullNone);
+        signal.fall(&bootstrap);
+        /*#ifdef USE_RC5
+        signal.rise(&decode_rise);
+        signal.fall(&decode_fall);
+        #else
+        signal.fall(&bootstrap);
+        #endif*/
+    }
+
+    void debug() {
+        #ifdef DEBUG_MODE
         if (start_bit1) {
             DEBUG::print("Fall\r\n");
             start_bit1 = false;
@@ -112,10 +124,10 @@ namespace Telecommande {
             start_bit2 = false;
         }
         
-        if (decoded) {
+        if (bootstrapped) {
             DEBUG::print("com %d\r\n", command);
             decoded = false;
         }
+        #endif
     }
-    
 }
