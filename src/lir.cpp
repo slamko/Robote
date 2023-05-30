@@ -96,5 +96,6 @@ namespace LIR {
     Digital l7{LIR7};
     Digital l8{LIR8};
     
-    Digital lg{LG}, ld {LD};
+    Digital lg{LG}
+    , ld {LD};
 }

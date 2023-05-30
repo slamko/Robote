@@ -23,21 +23,21 @@
 #define LIR7 A1
 #define LIR8 D11
 #define LG D12
-#define LD D2
+#define LD D13
 
 #define B D9
 #define R D10
 #define Y D11
 #define ARRIVEE A7
-#define RC5 A5
+#define RC5 D2
 
 #define OUTL D12
 #define OUTR D2
 
-#define LED D13
+#define LED D2
 
 #define PISTE_BLANCHE true
-//#define DEBUG_MODE
+#define DEBUG_MODE
 // #define DEBUG_SONORE
 
 //#define PRIORITE_ENABLE

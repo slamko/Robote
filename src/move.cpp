@@ -525,15 +525,18 @@ namespace Move {
     }
 
     static void init_arrivee_timer() {
+#ifndef DEBUG_MODE
         arrivee_in.mode(PullNone);
         arrivee_in.rise(&interrupteur);
-#ifndef DEBUG_MODE
 #endif
     }
 
     void init() {
         arret = true;
         init_arrivee_timer();
-        //mise_en_marche();
+
+        #ifdef DEBUG_MODE
+        mise_en_marche();
+        #endif
     }
 }

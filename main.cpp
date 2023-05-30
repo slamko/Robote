@@ -8,9 +8,6 @@
 #include "include/events.h"
 #include <stdio.h>
 
-//InterruptIn d(A4);
-//bool rise = false;
-
 static void init() {
     H::init();
     Move::init();
@@ -18,16 +15,22 @@ static void init() {
     Sonore::init();
 }
 
+void inter() {
+    
+}
+
 int main()
 {
-    //d.rise([]() {rise = true;});
     init();
     
     while (1) {
-        /*if (rise) {
-            printf("ererherher\r\n");
+        
+       /* if (rise) {
+            printf("ererherher %d\r\n", (int)d);
             rise = false;
-        }*/
+        }
+        */
+        //Telecommande::control();
         Move::control();   
                 
     }
