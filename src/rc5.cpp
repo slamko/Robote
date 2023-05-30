@@ -68,6 +68,7 @@ namespace Telecommande {
     void decode_fall() {
         if (!decoding || clock.elapsed_time() > max_long_pulse) {
             decode_reset();
+            start_bit1 = true;
             return;    
         }
 
@@ -81,7 +82,7 @@ namespace Telecommande {
 
     void decode_rise() {
         if (!decoding) return;
-
+        start_bit2 = true;
         if (cur_bit && !GET_BIT(command, cur_bit) && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
@@ -96,31 +97,15 @@ namespace Telecommande {
         signal.fall(&decode_fall);
     }
 
-/*
-    class RC5 {
-    public:
-        RC5(PinName pin, std::map<uint8_t, Callback<void()>> commands);
+    void control() {
+        if (start_bit1) {
+            DEBUG::print("Fall 1\r\n");
+            start_bit1 = false;
+        }
+        if (start_bit2) {
+            DEBUG::print("Rise\r\n");
+            start_bit2 = false;
+        }
+    }
     
-    private:
-        InterruptIn signal;
-        Timer clock;
-        bool decoding = false;
-
-        std::map<uint8_t, Callback<void()>> commands;
-        uint16_t command;
-        uint8_t cur_bit;
-    };
-
-    RC5::RC5(PinName pin, std::map<uint8_t, Callback<void()>> commands) 
-        : signal{pin}, commands{commands} 
-    {
-        signal.mode(PullNone);
-        signal.rise(&decode_rise);
-        signal.fall(&decode_fall);
-    };
-
-    RC5 telecom {D13, {
-        {53, &Move::mise_en_marche}
-    }};
-    */
 }

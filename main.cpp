@@ -14,7 +14,7 @@
 static void init() {
     H::init();
     Move::init();
-    Telecommande::init();
+    //Telecommande::init();
     Sonore::init();
 }
 

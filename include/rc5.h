@@ -3,5 +3,7 @@
 
 namespace Telecommande {
     void init();
+
+    void control();
 }
 #endif

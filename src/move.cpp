@@ -27,6 +27,7 @@ namespace Move {
     static Timer racourci_timer {};
     static Timer demi_tour_timer {};
     static Timer arret_timer {};
+    static Timer interrupt_timer {};
     static Timer raccourci_prevoir_timer {};
 #ifndef DEBUG_MODE
     static InterruptIn arrivee_in {ARRIVEE};
@@ -479,7 +480,7 @@ namespace Move {
         if (pid_timer.elapsed_time() < PID_Sample_Rate) return;
 
         LIR::read();
-       // arrivee_control();
+        arrivee_control();
         Sonore::debug();
 
         if (!arret) {
@@ -510,10 +511,15 @@ namespace Move {
     }
 
     static void interrupteur() {
-       
+
         if (arret) {
+            interrupt_timer.reset();
+            interrupt_timer.start();
             mise_en_marche();
         } else {
+            if (interrupt_timer.elapsed_time().count() < 1000000) return;
+            interrupt_timer.reset();
+            interrupt_timer.stop();
             arrivee = true;
         }
     }
