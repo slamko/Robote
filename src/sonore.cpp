@@ -18,6 +18,7 @@ namespace Sonore {
     
     bool echo_rise_act {false};
     bool echo_fall_act {false};
+    bool active {false};
 
     float distance = OBSTACLE_PROCHE_DIST + 1.0f;
     usec echo_pulse_dur;
@@ -107,8 +108,11 @@ namespace Sonore {
     }
 
     void start() {
+        if (active) return; 
+
         trig_repeat_timer.reset();
         trig_repeat_timer.start();
+        active = true;
 
         echo.rise(&on_echo_rise);
         echo.fall(&on_echo_fall);
@@ -117,8 +121,11 @@ namespace Sonore {
     }
 
     void stop() {
+        if (!active) return; 
+
         trig_repeat_timer.stop();
         trig_repeat_timer.reset();
+        active = false;
 
         echo.rise(NULL);
         echo.fall(NULL);

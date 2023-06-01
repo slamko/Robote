@@ -31,7 +31,6 @@ int main()
         }
         */
         //Telecommande::debug();
-       // wait_us(10000);
         Move::control();   
                 
     }

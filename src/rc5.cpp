@@ -73,6 +73,7 @@ namespace RC5 {
 
 
     void decode_fall() {
+        //if (decoded) return;
         if (!decoding || clock.elapsed_time() > max_long_pulse) {
             decode_reset();
             start_bit1 = true;
@@ -103,11 +104,11 @@ namespace RC5 {
 
 namespace SIRC {
     static constexpr int COMMAND_LEN = 12;
-    static constexpr usec start_bit_pulse = 2000us;
-    static constexpr usec high_pulse = 1600us;
-    static constexpr usec low_pulse = 1000us;
+    static constexpr usec start_bit_pulse = 1800us;
+    static constexpr usec high_pulse = 1000us;
+    static constexpr usec low_pulse = 400us;
 
-    uint8_t play_code = 24;
+    uint8_t play_code = 21;
 
     bool good_startcode() {
         return command & (1 << 0);
@@ -144,12 +145,14 @@ namespace SIRC {
             return;    
         }
 
+        start_bit1 = true;
         clock_restart();
     }
 
     void decode_rise() {
         if (!decoding) return;
 
+        start_bit2 = true;
         if (clock.elapsed_time() > high_pulse) {
             decode_bit(1);
         } else if (clock.elapsed_time() > low_pulse) {
@@ -166,6 +169,9 @@ namespace SIRC {
 
     void init() {
         signal.mode(PullNone);
+        signal.rise(&SIRC::decode_rise);
+        signal.fall(&SIRC::decode_fall);
+        /*
         #ifdef USE_RC5
         signal.rise(&RC5::decode_rise);
         signal.fall(&RC5::decode_fall);
@@ -175,27 +181,31 @@ namespace SIRC {
         #else
         signal.fall(&bootstrap);
         #endif
+        */
     }
 
     void debug() {
         #ifdef DEBUG_MODE
-        if (start_bit1) {
+       /* if (start_bit1) {
             DEBUG::print("Fall\r\n");
+            DEBUG::print("bit %d\r\n", cur_bit);
             start_bit1 = false;
         }
         if (start_bit2) {
             DEBUG::print("Rise\r\n");
+            DEBUG::print("bit %d\r\n", cur_bit);
             start_bit2 = false;
         }
-        
-        if (decoded) {
-            DEBUG::print("com %d\r\n", command);
-            decoded = false;
-        }
-
         if (bootstrapped) {
             DEBUG::print("bootstrapped\r\n");
         }
+        */
+        if (decoded) {
+            DEBUG::print("com %d\r\n", ((command >> 1) & 0x7F));
+            decoded = false;
+        }
+
+        
         #endif
     }
 }
