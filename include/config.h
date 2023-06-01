@@ -45,7 +45,6 @@
 //#define RACCOURCI_GAUCHE
 //#define CHALLENGE_ENABLE
 //#define ACCELERATE_ENABLE
-//#define USE_RC5
-#define USE_SIRC
+
 
 #endif
