@@ -5,7 +5,7 @@
 
 namespace H {
     static const int PWM_PERIOD = useci{100}.count();
-    static const int ARRET_TIME = useci{300000}.count();
+    static const int ARRET_TIME = useci{250000}.count();
     static const int ARRIVEE_TIME = useci{50000}.count();
 
     static PwmOut enb {ENB};

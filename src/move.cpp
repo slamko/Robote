@@ -81,33 +81,34 @@ namespace Move {
     static void demi_tour_croisement();
 
     static Callback<bool()> challenges_pred[] = {
-        []() {
+        /*[]() {
             return croisement_counter >= 1;
-        },
+        },*/
         [] () {
             return double_gauche_balise_counter >= 1;
         },
         [] () {
-            return double_droite_balise_counter >= 1;
+            return balise_droite_counter >= 1;
         }
     };
 
     static Callback<void()> challenges_reset[] = {
-        []() {
+       /* []() {
             croisement_counter = 0;
-        },
+        },*/
         [] () {
             double_gauche_balise_counter = 0;
         },
         [] () {
-            double_droite_balise_counter = 0;
+            balise_droite_counter = 0;
         }
     };
 
     static Callback<void()> challenges_actions[] = {
-        &demi_tour_croisement,
+       /* &demi_tour_croisement,*/
+        &demi_tour_balise_gauche,
         &demi_tour_balise_droite,
-        &demi_tour_balise_gauche
+        
     };
 
     void mise_en_marche() {
@@ -385,11 +386,12 @@ namespace Move {
                 if (challenges_pred[i]()) {
                     cur_challenge = i;
                     demi_tour_start();
+                    break;
                 }
             }
         }
 
-        if (demi_tour_timer.elapsed_time().count() > RACCOURCI_PREVOIR_TIME) {
+        if (demi_tour_timer.elapsed_time().count() > 0) {
             challenges_actions[cur_challenge]();
 
             if (rotation_fini) {
@@ -399,7 +401,6 @@ namespace Move {
                 DEBUG::print("Demi tour fini");
                 
                 challenges_reset[cur_challenge]();
-                
 
                 demi_tour_timer.stop();
                 demi_tour_timer.reset();
@@ -552,8 +553,8 @@ namespace Move {
         Sonore::debug();
 
         if (!arret) {
-#ifdef CHALLENGE_ENABLE
             challenge_control();
+#ifdef CHALLENGE_ENABLE
 #endif
 
 #ifdef ACCELERATE_ENABLE
