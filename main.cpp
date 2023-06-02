@@ -15,10 +15,6 @@ static void init() {
     Sonore::init();
 }
 
-void inter() {
-    
-}
-
 int main()
 {
     init();

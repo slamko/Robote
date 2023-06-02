@@ -15,11 +15,11 @@ namespace Move {
     #ifdef DEBUG_MODE
     const usec PID_Sample_Rate = 500000us; 
     #else
-    const usec PID_Sample_Rate = 4900us; 
+    const usec PID_Sample_Rate = 3400us; 
     #endif
 
     const usec RACOURCI_TIME = 150000us;
-    const int MIS_EN_MARCHE_TIME = usec(5000us).count(); 
+    const int MIS_EN_MARCHE_TIME = usec(30000us).count(); 
     const int RACCOURCI_PREVOIR_TIME = usec(500000us).count(); 
     const int DEMI_TOUR_WAIT_TIME = usec(150000us).count(); 
 
@@ -69,6 +69,8 @@ namespace Move {
     unsigned int croisement_counter;
     unsigned int balise_droite_counter;
     unsigned int balise_gauche_counter;
+    unsigned int no_echo_diff;
+    int no_echo_last;
     size_t cur_challenge;
     const unsigned int INTERRUPT_AWAIT_TIME = 500000;
     long pid_timer_diff = INTERRUPT_AWAIT_TIME + 1;
@@ -278,20 +280,8 @@ namespace Move {
         Sonore::control();
         if (priorite) {
             DEBUG::print("echo dist: %d \r\n", (int)(Sonore::get_obstacle_dist() * 1.0f));
-
-            if (!arret && Sonore::obstacle_detected()) {
-                DEBUG::print("obstacle\r\n");
-                stop();
-            }
-            
-            if (LIR::croisement()) {
-                priorite = false;
-                PID::set_max_out(MAX_VITESSE);
-                DEBUG::print("croisement\r\n");
-                //Sonore::stop();
-            }
-
-            if (arret && !Sonore::obstacle_detected()) {
+/*
+            if (arret && !Sonore::obstacle_detected() && !Sonore::obstacle_proche()) {
                 DEBUG::print("mise en marche\r\n");
                 
                 priorite = false;
@@ -300,10 +290,37 @@ namespace Move {
                 PID::set_max_out(MAX_VITESSE);
                 wait_us(MIS_EN_MARCHE_TIME);
             }
+*/
+            if (Sonore::no_obstacle_count() - no_echo_last > 4) {
+                DEBUG::print("mise en marche\r\n");
+                
+                priorite = false;
+                mise_en_marche();
+                //Sonore::stop();
+                PID::set_max_out(MAX_VITESSE);
+                wait_us(MIS_EN_MARCHE_TIME);
+            }
+
+            if (!arret && (Sonore::obstacle_detected() || Sonore::obstacle_proche())) {
+                DEBUG::print("obstacle\r\n");
+                no_echo_last = Sonore::no_obstacle_count();
+                stop();
+            }
             
+            if (LIR::croisement()) {
+                priorite = false;
+                PID::set_max_out(MAX_VITESSE);
+                DEBUG::print("croisement\r\n");
+                //Sonore::stop();
+            }        
         } else  if (LIR::balise_priorite() && !priorite) {
             priorite = true;
             DEBUG::print("Priorite\r\n");
+            if (Sonore::obstacle_detected() || Sonore::obstacle_proche()) {
+                DEBUG::print("obstacle\r\n");
+                no_echo_last = Sonore::no_obstacle_count();
+                stop();
+            }
         }
         else if (Sonore::obstacle_proche()) {
             DEBUG::print("obstacle proche\r\n");

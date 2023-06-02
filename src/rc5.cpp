@@ -169,18 +169,19 @@ namespace SIRC {
 
     void init() {
         signal.mode(PullNone);
+        signal.rise(&SIRC::decode_rise);
+        signal.fall(&SIRC::decode_fall);
         
         #ifdef USE_RC5
         signal.rise(&RC5::decode_rise);
         signal.fall(&RC5::decode_fall);
         #endif
         #ifdef USE_SIRC
-        signal.rise(&SIRC::decode_rise);
-        signal.fall(&SIRC::decode_fall);
         #endif
         #ifdef TELECOMMANDE_BOOTSTRAP
         signal.fall(&bootstrap);
         #endif
+        
     }
 
     void debug() {

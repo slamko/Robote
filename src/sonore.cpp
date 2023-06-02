@@ -13,12 +13,13 @@ namespace Sonore {
     const usec SONORE_RESTART_INT = 60000us; 
     const usec TRIG_PULSE_DUR = 10us; 
     const usecf SOUND_SPEED = 0.034us;
-    const float OBSTACLE_DETECT_DIST = 40.0f;
+    const float OBSTACLE_DETECT_DIST = 50.0f;
     const float OBSTACLE_PROCHE_DIST = 80.0f;
     
     bool echo_rise_act {false};
     bool echo_fall_act {false};
     bool active {false};
+    int no_obs_count = 0;
 
     float distance = OBSTACLE_PROCHE_DIST + 1.0f;
     usec echo_pulse_dur;
@@ -61,6 +62,10 @@ namespace Sonore {
         echo_pulse_dur = echo_timer.elapsed_time();
         distance = get_obstacle_dist();
         echo_fall = true;
+
+        if (!obstacle_proche() && !obstacle_detected()) {
+            no_obs_count ++;
+        }
        // DEBUG::nb_print("echo fall\r\n");
     }
 
@@ -118,6 +123,10 @@ namespace Sonore {
         echo.fall(&on_echo_fall);
 
         run_sonore();
+    }
+
+    int no_obstacle_count() {
+        return no_obs_count;
     }
 
     void stop() {
