@@ -47,6 +47,10 @@ namespace RC5 {
         return ((command & (1 << 0)) && (command & (1 << 1)));
     }
 
+    bool is_play_code() {
+        return (good_startcode() && (((command >> 8) & 0xFF) == play_code));
+    }
+
     void decode_bit(uint8_t bit) {
         if (bit) {
             command |= (bit << cur_bit);
@@ -54,23 +58,11 @@ namespace RC5 {
         cur_bit++;
 
         if (cur_bit >= COMMAND_LEN) {
-            decoding = false;
             decoded = true;
-            cur_bit = 0;
-            clock.stop();
-            clock.reset();
-
-            if (good_startcode()) {
-                if (((command >> 8) & 0xFF) == play_code) {
-                    Move::mise_en_marche();
-                }
-            }
-            return;
         }
 
-        clock_restart();
+        clock.reset();
     }
-
 
     void decode_fall() {
         //if (decoded) return;
@@ -114,6 +106,10 @@ namespace SIRC {
         return command & (1 << 0);
     }
 
+    bool is_playcode() {
+        return (good_startcode() && ((command >> 1) & 0x7F) == play_code);
+    }
+
     void decode_bit(uint8_t bit) {
         if (bit) {
             command |= (bit << cur_bit);
@@ -121,24 +117,15 @@ namespace SIRC {
         cur_bit++;
 
         if (cur_bit >= COMMAND_LEN) {
-            decoding = false;
             decoded = true;
-            cur_bit = 0;
-            clock.stop();
-            clock.reset();
-
-            if (good_startcode()) {
-                if (((command >> 1) & 0x7F) == play_code) {
-                    Move::mise_en_marche();
-                }
-            }
-            return;
         }
 
-        clock_restart();
+        clock.reset();
     }
 
     void decode_fall() {
+        if (decoded) return;
+
         if (!decoding || clock.elapsed_time() > start_bit_pulse * 2) {
             decode_reset();
             start_bit1 = true;
@@ -150,7 +137,7 @@ namespace SIRC {
     }
 
     void decode_rise() {
-        if (!decoding) return;
+        if (!decoding || decoded) return;
 
         start_bit2 = true;
         if (clock.elapsed_time() > high_pulse) {
@@ -163,6 +150,7 @@ namespace SIRC {
 
     void bootstrap() {
         if (bootstrapped) return;
+
         bootstrapped = true;
         Move::mise_en_marche();
     }
@@ -171,7 +159,7 @@ namespace SIRC {
         signal.mode(PullNone);
         signal.rise(&SIRC::decode_rise);
         signal.fall(&SIRC::decode_fall);
-        
+        /*
         #ifdef USE_RC5
         signal.rise(&RC5::decode_rise);
         signal.fall(&RC5::decode_fall);
@@ -181,10 +169,10 @@ namespace SIRC {
         #ifdef TELECOMMANDE_BOOTSTRAP
         signal.fall(&bootstrap);
         #endif
-        
+        */
     }
 
-    void debug() {
+    void control() {
         #ifdef DEBUG_MODE
        /* if (start_bit1) {
             DEBUG::print("Fall\r\n");
@@ -200,12 +188,20 @@ namespace SIRC {
             DEBUG::print("bootstrapped\r\n");
         }
         */
+
+        #endif
+
         if (decoded) {
             DEBUG::print("com %d\r\n", ((command >> 1) & 0x7F));
             decoded = false;
-        }
+            decoding = false;
+            cur_bit = 0;
+            clock.stop();
+            clock.reset();
 
-        
-        #endif
+            if (SIRC::is_playcode()) {
+                Move::mise_en_marche();
+            }
+        }
     }
 }

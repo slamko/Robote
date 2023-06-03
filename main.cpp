@@ -26,7 +26,7 @@ int main()
             rise = false;
         }
         */
-        //Telecommande::debug();
+        Telecommande::control();
         Move::control();   
                 
     }

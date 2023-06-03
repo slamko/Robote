@@ -80,39 +80,28 @@ namespace Move {
     static void demi_tour_balise_droite();
     static void demi_tour_croisement();
 
-    static Callback<bool()> challenges_pred[] = {
-        /*[]() {
-            return croisement_counter >= 1;
-        },*/
-        [] () {
-            return double_gauche_balise_counter >= 1;
-        },
-        [] () {
-            return balise_droite_counter >= 1;
-        }
+    struct Challenge {
+        Callback<bool()> predicate;
+        Callback<void()> reset;
+        Callback<void()> action;
+        unsigned int delay;
     };
 
-    static Callback<void()> challenges_reset[] = {
-       /* []() {
-            croisement_counter = 0;
-        },*/
-        [] () {
-            double_gauche_balise_counter = 0;
+    static Challenge challenges[] {
+        { 
+            .predicate = [] () {
+                return double_gauche_balise_counter >= 1;
+            },
+            .reset = [] () {
+                double_gauche_balise_counter = 0;
+            },
+            .action = &demi_tour_balise_gauche,
+            .delay = 0,
         },
-        [] () {
-            balise_droite_counter = 0;
-        }
-    };
-
-    static Callback<void()> challenges_actions[] = {
-       /* &demi_tour_croisement,*/
-        &demi_tour_balise_gauche,
-        &demi_tour_balise_droite,
-        
     };
 
     void mise_en_marche() {
-        if (!arret) return;
+       // if (!arret) return;
 
         pid_timer.reset();
         pid_timer.start();
@@ -121,15 +110,16 @@ namespace Move {
         DEBUG::print("Mise en marche");
         arrivee = false;
         arret = false;
+        
         if (premier) {
-                premier = false;
-            }
+            premier = false;
+        }
 
-            interrupt_timer.reset();
-            interrupt_timer.start();
+        interrupt_timer.reset();
+        interrupt_timer.start();
             
-            arrivee_timer.stop();
-            arrivee_timer.reset();
+        arrivee_timer.stop();
+        arrivee_timer.reset();
         H::marche();
     }
 
@@ -153,9 +143,9 @@ namespace Move {
         }
 
         if (rotation_360 && demi_tour_gauche) {
-            return Err::URGENTE;
+            return Err::IMPORTANTE;
         } else if (rotation_360) {
-            return -Err::URGENTE;
+            return -Err::IMPORTANTE;
         }
 
         if (fin_racourci && racourci_gauche) {
@@ -379,11 +369,9 @@ namespace Move {
     void challenge_control() {
         balise_counter();
 
-        DEBUG::d_assert(ARR_SIZE(challenges_pred) == ARR_SIZE(challenges_reset));
-
         if (!en_demi_tour) {
-            for (int i = 0; i < ARR_SIZE(challenges_pred); i++) {
-                if (challenges_pred[i]()) {
+            for (int i = 0; i < ARR_SIZE(challenges); i++) {
+                if (challenges[i].predicate()) {
                     cur_challenge = i;
                     demi_tour_start();
                     break;
@@ -391,8 +379,8 @@ namespace Move {
             }
         }
 
-        if (demi_tour_timer.elapsed_time().count() > 0) {
-            challenges_actions[cur_challenge]();
+        if (demi_tour_timer.elapsed_time().count() > challenges[cur_challenge].delay) {
+            challenges[cur_challenge].action();
 
             if (rotation_fini) {
                 rotation_fini = false;
@@ -400,7 +388,7 @@ namespace Move {
                 DEBUG::print("elapsed time %d\r\n", demi_tour_timer.elapsed_time().count());
                 DEBUG::print("Demi tour fini");
                 
-                challenges_reset[cur_challenge]();
+                challenges[cur_challenge].reset();
 
                 demi_tour_timer.stop();
                 demi_tour_timer.reset();
@@ -429,13 +417,6 @@ namespace Move {
             balise_gauche_counter ++;
         }
         
-/*
-        if (racourci_prevoir && (error >= 3)) {
-            racourci_prevoir = false;
-            DEBUG::print("cancel racourci\r\n");
-        }
-*/     
-
         if (racourci_prevoir) {
             if (raccourci_prevoir_timer.elapsed_time().count() > RACCOURCI_PREVOIR_TIME) {
                 racourci_prevoir = false;
