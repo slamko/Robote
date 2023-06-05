@@ -37,7 +37,7 @@
 #define LED D2
 
 #define PISTE_BLANCHE true
-// #define DEBUG_MODE
+//#define DEBUG_MODE
 // #define DEBUG_SONORE
 
 //#define PRIORITE_ENABLE

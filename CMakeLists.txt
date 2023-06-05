@@ -22,6 +22,9 @@ target_sources(${APP_TARGET}
         pont_h.cpp
         sonore.cpp
         lir.cpp
+        rc.cpp
+        debug.cpp
+        move.cpp
         pid.cpp
         main.cpp
 )

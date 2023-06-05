@@ -101,7 +101,7 @@ namespace Move {
     };
 
     void mise_en_marche() {
-       // if (!arret) return;
+        if (!arret) return;
 
         pid_timer.reset();
         pid_timer.start();

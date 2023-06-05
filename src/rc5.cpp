@@ -37,18 +37,36 @@ namespace Telecommande {
 namespace RC5 {
     static const int long_pulse = usec(1778).count();
     static const int short_pulse = usec(889).count();
-    static const int med_pulse = (long_pulse + short_pulse) / 2;
+    static const int med_pulse = 1500;
     static const usec max_long_pulse = 3000us; 
-    static const uint8_t play_code = 53;
+    static const uint8_t play_code = 12;
 
     static constexpr int COMMAND_LEN = 14;
 
     bool good_startcode() {
         return ((command & (1 << 0)) && (command & (1 << 1)));
     }
+/*
+    uint8_t inverse_bits(uint8_t num) {
+        for (int i = 0; i < 2; i++) {
+            num ^= (num & (1 << i)) << (5 - i);
+            num ^= (num & (1 << (5 - i))) << (i);
+            num ^= (num & (1 << i)) << (5 - i);
+        }
+        return num;
+    }
+*/
+    uint8_t inverse_bits(uint8_t num) {
+        uint8_t res = 0;
+        for (int i = 0; i < 3; i++) {
+            res |= (((num & (1 << i)) >> i) << (5 - i));
+            res |= (((num & (1 << (5 - i))) >> (5 - i)) << i);
+        }
+        return res;
+    }
 
-    bool is_play_code() {
-        return (good_startcode() && (((command >> 8) & 0xFF) == play_code));
+    bool is_playcode() {
+        return (inverse_bits(((command >> 8) & 0x3F)) == play_code);
     }
 
     void decode_bit(uint8_t bit) {
@@ -59,6 +77,7 @@ namespace RC5 {
 
         if (cur_bit >= COMMAND_LEN) {
             decoded = true;
+            decoding = false;
         }
 
         clock.reset();
@@ -68,29 +87,30 @@ namespace RC5 {
         //if (decoded) return;
         if (!decoding || clock.elapsed_time() > max_long_pulse) {
             decode_reset();
+            decode_bit(1);
             start_bit1 = true;
             return;    
         }
 
-        if (GET_BIT(command, cur_bit) && clock.elapsed_time().count() < med_pulse) {
+        if (!GET_BIT(command, cur_bit - 1) && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
         }
 
-        //start_bit1 = true;
-        decode_bit(0);
+        start_bit1 = true;
+        decode_bit(1);
     }
 
     void decode_rise() {
         if (!decoding) return;
 
-        if (cur_bit && !GET_BIT(command, cur_bit) && clock.elapsed_time().count() < med_pulse) {
+        if (cur_bit && GET_BIT(command, cur_bit - 1) && clock.elapsed_time().count() < med_pulse) {
             clock_restart();
             return;
         }
 
         start_bit2 = true;
-        decode_bit(1);
+        decode_bit(0);
     }
 }
 
@@ -157,8 +177,8 @@ namespace SIRC {
 
     void init() {
         signal.mode(PullNone);
-        signal.rise(&SIRC::decode_rise);
-        signal.fall(&SIRC::decode_fall);
+        signal.rise(&RC5::decode_rise);
+        signal.fall(&RC5::decode_fall);
         /*
         #ifdef USE_RC5
         signal.rise(&RC5::decode_rise);
@@ -173,8 +193,8 @@ namespace SIRC {
     }
 
     void control() {
-        #ifdef DEBUG_MODE
-       /* if (start_bit1) {
+      /*  #ifdef DEBUG_MODE
+        if (start_bit1) {
             DEBUG::print("Fall\r\n");
             DEBUG::print("bit %d\r\n", cur_bit);
             start_bit1 = false;
@@ -187,19 +207,18 @@ namespace SIRC {
         if (bootstrapped) {
             DEBUG::print("bootstrapped\r\n");
         }
-        */
-
         #endif
+*/
 
         if (decoded) {
-            DEBUG::print("com %d\r\n", ((command >> 1) & 0x7F));
+            DEBUG::print("com %d\r\n", RC5::inverse_bits((command >> 8) & 0x3F));
             decoded = false;
             decoding = false;
             cur_bit = 0;
             clock.stop();
             clock.reset();
 
-            if (SIRC::is_playcode()) {
+            if (RC5::is_playcode()) {
                 Move::mise_en_marche();
             }
         }
