@@ -22,6 +22,7 @@ namespace Move {
     const int MIS_EN_MARCHE_TIME = usec(30000us).count(); 
     const int RACCOURCI_PREVOIR_TIME = usec(500000us).count(); 
     const int DEMI_TOUR_WAIT_TIME = usec(150000us).count(); 
+    const int SINGLE_BANDE_WAIT_TIME = usec(100000us).count();
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
@@ -29,6 +30,7 @@ namespace Move {
     static Timer arret_timer {};
     static Timer interrupt_timer {};
     static Timer arrivee_timer {};
+    //static Timer single_bande_disable_timer {};
     static Timer raccourci_prevoir_timer {};
 #ifndef DEBUG_MODE
     static InterruptIn arrivee_in {ARRIVEE};
@@ -61,6 +63,7 @@ namespace Move {
     bool demi_tour_l8_deux = false;
     bool demi_tour_gauche = false;
     bool double_gauche_balise;
+    bool balise_gauche_ch = false;
     bool double_droite_balise;
     bool premier = true;
 
@@ -90,12 +93,34 @@ namespace Move {
     static Challenge challenges[] {
         { 
             .predicate = [] () {
+                return balise_gauche_counter >= 1;
+            },
+            .reset = [] () {
+                balise_gauche_counter = 0;
+                balise_gauche = false;
+                racourci_prevoir = false;
+            },
+            .action = &demi_tour_balise_gauche,
+            .delay = 0,
+        },
+        { 
+            .predicate = [] () {
                 return double_gauche_balise_counter >= 1;
             },
             .reset = [] () {
                 double_gauche_balise_counter = 0;
             },
             .action = &demi_tour_balise_gauche,
+            .delay = 0,
+        },
+        { 
+            .predicate = [] () {
+                return double_droite_balise_counter >= 1;
+            },
+            .reset = [] () {
+                double_droite_balise_counter = 0;
+            },
+            .action = &demi_tour_balise_droite,
             .delay = 0,
         },
     };
@@ -143,9 +168,9 @@ namespace Move {
         }
 
         if (rotation_360 && demi_tour_gauche) {
-            return Err::IMPORTANTE;
+            return Err::URGENTE;
         } else if (rotation_360) {
-            return -Err::IMPORTANTE;
+            return -Err::URGENTE;
         }
 
         if (fin_racourci && racourci_gauche) {
@@ -322,6 +347,8 @@ namespace Move {
     }
 
     void balise_counter() {
+        if (rotation_360 || en_demi_tour) return;
+
         if (!balise_droite && LIR::balise_priorite()) {
             balise_droite = true;
         }
@@ -329,6 +356,15 @@ namespace Move {
         if (balise_droite && !LIR::balise_priorite()) {
             balise_droite = false;
             balise_droite_counter ++;
+        }
+
+        if (!balise_gauche_ch && LIR::balise_raccourci()) {
+            balise_gauche_ch = true;
+        }
+
+        if (balise_gauche_ch && !LIR::balise_raccourci()) {
+            balise_gauche_ch = false;
+            balise_gauche_counter ++;
         }
 
         if (!en_croisement && LIR::croisement()) {
@@ -347,6 +383,7 @@ namespace Move {
         if (double_gauche_balise && !LIR::balise_raccourci() && !LIR::lg) {
             double_gauche_balise = false;
             double_gauche_balise_counter ++;
+            balise_gauche_counter -= 2;
         }
 
         if (!double_droite_balise && LIR::balise_priorite() && LIR::ld) {
@@ -356,6 +393,7 @@ namespace Move {
         if (double_droite_balise && !LIR::balise_priorite() && !LIR::ld) {
             double_droite_balise = false;
             double_droite_balise_counter ++;
+            balise_droite_counter -= 2;
         }
     }
 
@@ -414,7 +452,6 @@ namespace Move {
             racourci_prevoir = true;
             raccourci_prevoir_timer.reset();
             raccourci_prevoir_timer.start();
-            balise_gauche_counter ++;
         }
         
         if (racourci_prevoir) {
@@ -426,6 +463,14 @@ namespace Move {
 
             if (LIR::croisement() || (LIR::piste_gauche() && LIR::piste_droite())) {
                 racourci_prevoir = false;
+                raccourci_prevoir_timer.stop();
+                return;
+            }
+
+            if (LIR::balise_raccourci()) {
+                racourci_prevoir = false;
+                raccourci_prevoir_timer.stop();
+                return;
             }
 
             if (LIR::piste_gauche()) {
@@ -534,9 +579,6 @@ namespace Move {
         Sonore::debug();
 
         if (!arret) {
-            challenge_control();
-#ifdef CHALLENGE_ENABLE
-#endif
 
 #ifdef ACCELERATE_ENABLE
             accelerate_control();
@@ -545,6 +587,10 @@ namespace Move {
 
 #ifdef RACCOURCI_ENABLE
             racourci_control();
+#endif
+
+#ifdef CHALLENGE_ENABLE
+            challenge_control();
 #endif
 
             PID::calcul(error, prev_error);
