@@ -23,6 +23,7 @@ namespace Move {
     const int RACCOURCI_PREVOIR_TIME = usec(500000us).count(); 
     const int DEMI_TOUR_WAIT_TIME = usec(150000us).count(); 
     const int SINGLE_BANDE_WAIT_TIME = usec(100000us).count();
+    const unsigned int INTERRUPT_AWAIT_TIME = usec(500000us).count();
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
@@ -38,14 +39,13 @@ namespace Move {
 
     using error_t = int8_t;
     static error_t prev_error;
-    static error_t error;
 
     bool arret = true;
     bool priorite = false;
     bool ldroit_on = false;
     bool lgauche_on = false;
     bool arrivee = false;
-    bool balise_gauche = false;
+    bool balise_gauche_raccourci = false;
     bool balise_droite = false;
     bool en_demi_tour = false;
     bool en_croisement = false;
@@ -63,7 +63,7 @@ namespace Move {
     bool demi_tour_l8_deux = false;
     bool demi_tour_gauche = false;
     bool double_gauche_balise;
-    bool balise_gauche_ch = false;
+    bool balise_gauche = false;
     bool tour_complet_demi = false;
     bool tour_complet = false;
     bool double_droite_balise;
@@ -75,11 +75,12 @@ namespace Move {
     unsigned int balise_droite_counter;
     unsigned int balise_gauche_counter;
     unsigned int no_echo_diff;
-    int no_echo_last;
-    size_t cur_challenge;
-    const unsigned int INTERRUPT_AWAIT_TIME = 500000;
-    long pid_timer_diff = INTERRUPT_AWAIT_TIME + 1;
     unsigned int last_pid_timer = 0;
+    unsigned  int no_echo_last;
+
+    size_t cur_challenge;
+    
+    long pid_timer_diff = INTERRUPT_AWAIT_TIME + 1;
 
     static void demi_tour_balise_gauche();
     static void demi_tour_balise_droite();
@@ -95,18 +96,6 @@ namespace Move {
     };
 
     static Challenge challenges[] {
-        { 
-            .predicate = [] () {
-                return balise_gauche_counter >= 1;
-            },
-            .reset = [] () {
-                balise_gauche_counter = 0;
-                balise_gauche = false;
-                racourci_prevoir = false;
-            },
-            .action = &tour_balise_gauche,
-            .delay = 0,
-        },
         { 
             .predicate = [] () {
                 return balise_droite_counter >= 1;
@@ -420,12 +409,12 @@ namespace Move {
             balise_droite_counter ++;
         }
 
-        if (!balise_gauche_ch && LIR::balise_raccourci()) {
-            balise_gauche_ch = true;
+        if (!balise_gauche && LIR::balise_raccourci()) {
+            balise_gauche = true;
         }
 
-        if (balise_gauche_ch && !LIR::balise_raccourci()) {
-            balise_gauche_ch = false;
+        if (balise_gauche && !LIR::balise_raccourci()) {
+            balise_gauche = false;
             balise_gauche_counter ++;
         }
 
@@ -501,16 +490,16 @@ namespace Move {
         using LIR::l8;
 
         if (LIR::balise_raccourci() 
-                &&!balise_gauche && !racourci_prevoir 
+                &&!balise_gauche_raccourci && !racourci_prevoir 
                 && !racourci && !racourci_pris && !fin_racourci) {
 
-            balise_gauche = true;
+            balise_gauche_raccourci = true;
             DEBUG::print("balise gauche\r\n");
         }
 
-        if (balise_gauche && !l8) {
+        if (balise_gauche_raccourci && !l8) {
             DEBUG::print("racourci prevoir\r\n");
-            balise_gauche = false;
+            balise_gauche_raccourci = false;
             racourci_prevoir = true;
             raccourci_prevoir_timer.reset();
             raccourci_prevoir_timer.start();
@@ -547,7 +536,7 @@ namespace Move {
             if (racourci) {
                 DEBUG::print("racourci\r\n");
                 racourci_prevoir = false;
-                balise_gauche = false;
+                balise_gauche_raccourci = false;
             }
         } 
 
@@ -560,7 +549,7 @@ namespace Move {
                 racourci = false;
                 ldroit_on = false;
                 racourci_gauche = false;
-                balise_gauche = false;
+                balise_gauche_raccourci = false;
                 racourci_pris = true;
                 DEBUG::print("Racourci pris\r\n");
             }
@@ -661,7 +650,7 @@ namespace Move {
             challenge_control();
 #endif
 
-            error = pid_error();
+            error_t error = pid_error();
             PID::calcul(error, prev_error);
             prev_error = error;
         }
