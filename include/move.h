@@ -13,6 +13,12 @@ namespace Move {
         URGENTE = 5
     };
 
+    int demi_tour_balise_gauche();
+    int demi_tour_balise_droite();
+    int demi_tour_croisement();
+    int tour_balise_gauche();
+    int tour_balise_droite();
+
     void control();
 
     void mise_en_marche();

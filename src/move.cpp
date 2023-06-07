@@ -10,6 +10,7 @@
 #include "include/pont.h"
 #include "include/events.h"
 #include "include/debug.h"
+#include "include/challenge.h"
 
 namespace Move {
     #ifdef DEBUG_MODE
@@ -21,17 +22,13 @@ namespace Move {
     const usec RACOURCI_TIME = 150000us;
     const int MIS_EN_MARCHE_TIME = usec(30000us).count(); 
     const int RACCOURCI_PREVOIR_TIME = usec(500000us).count(); 
-    const int DEMI_TOUR_WAIT_TIME = usec(150000us).count(); 
-    const int SINGLE_BANDE_WAIT_TIME = usec(100000us).count();
     const unsigned int INTERRUPT_AWAIT_TIME = usec(500000us).count();
 
     static Timer pid_timer {};
     static Timer racourci_timer {};
-    static Timer demi_tour_timer {};
     static Timer arret_timer {};
     static Timer interrupt_timer {};
     static Timer arrivee_timer {};
-    //static Timer single_bande_disable_timer {};
     static Timer raccourci_prevoir_timer {};
 #ifndef DEBUG_MODE
     static InterruptIn arrivee_in {ARRIVEE};
@@ -46,9 +43,7 @@ namespace Move {
     bool lgauche_on = false;
     bool arrivee = false;
     bool balise_gauche_raccourci = false;
-    bool balise_droite = false;
-    bool en_demi_tour = false;
-    bool en_croisement = false;
+
     bool racourci_prevoir = false;
     bool racourci_gauche = false;
     bool racourci_pris = false;
@@ -57,76 +52,20 @@ namespace Move {
     bool racourci = false;
     bool accelere = false;
     bool en_raccourci = false;
-    bool rotation_fini = false;
     bool demi_tour_l8_un = false;
     bool demi_tour_l8_nul = false;
     bool demi_tour_l8_deux = false;
     bool demi_tour_gauche = false;
-    bool double_gauche_balise;
-    bool balise_gauche = false;
+    
     bool tour_complet_demi = false;
     bool tour_complet = false;
-    bool double_droite_balise;
     bool premier = true;
 
-    unsigned int double_gauche_balise_counter;
-    unsigned int double_droite_balise_counter;
-    unsigned int croisement_counter;
-    unsigned int balise_droite_counter;
-    unsigned int balise_gauche_counter;
     unsigned int no_echo_diff;
     unsigned int last_pid_timer = 0;
-    unsigned  int no_echo_last;
-
-    size_t cur_challenge;
+    unsigned int no_echo_last;
     
     long pid_timer_diff = INTERRUPT_AWAIT_TIME + 1;
-
-    static void demi_tour_balise_gauche();
-    static void demi_tour_balise_droite();
-    static void demi_tour_croisement();
-    static void tour_balise_gauche();
-    static void tour_balise_droite();
-
-    struct Challenge {
-        Callback<bool()> predicate;
-        Callback<void()> reset;
-        Callback<void()> action;
-        unsigned int delay;
-    };
-
-    static Challenge challenges[] {
-        { 
-            .predicate = [] () {
-                return balise_droite_counter >= 1;
-            },
-            .reset = [] () {
-                balise_droite_counter = 0;
-            },
-            .action = &tour_balise_droite,
-            .delay = 0,
-        },
-        { 
-            .predicate = [] () {
-                return double_gauche_balise_counter >= 1;
-            },
-            .reset = [] () {
-                double_gauche_balise_counter = 0;
-            },
-            .action = &tour_balise_gauche,
-            .delay = 150000,
-        },
-        { 
-            .predicate = [] () {
-                return double_droite_balise_counter >= 1;
-            },
-            .reset = [] () {
-                double_droite_balise_counter = 0;
-            },
-            .action = &tour_balise_droite,
-            .delay = 150000,
-        },
-    };
 
     void mise_en_marche() {
         if (!arret) return;
@@ -223,16 +162,7 @@ namespace Move {
     }
 */
 
-    static void figure_control() {
-        using LIR::l1;
-        using LIR::ld;
-
-        if (ld && l1) {
-            rotation_360 = true;
-        }
-    }
-
-    static void tour_balise_gauche() {
+    int tour_balise_gauche() {
         using namespace LIR;
 
         if (!rotation_360) {
@@ -248,14 +178,15 @@ namespace Move {
         }
 
         if (tour_complet && l1) {
-            rotation_fini = true;
             rotation_360 = false;
             tour_complet = false;
             tour_complet_demi = false;
+            return 1;
         }
+        return 0;
     }
 
-    static void tour_balise_droite() {
+    int tour_balise_droite() {
         using namespace LIR;
 
         if (!rotation_360) {
@@ -272,15 +203,16 @@ namespace Move {
         }
 
         if (tour_complet && l8) {
-            rotation_fini = true;
             rotation_360 = false;
             tour_complet = false;
             tour_complet_demi = false;
             demi_tour_gauche = false;
+            return 1;
         }
+        return 0;
     }
 
-    static void demi_tour() {
+    int demi_tour() {
         using namespace LIR;
 
         if (!rotation_360) {
@@ -288,12 +220,13 @@ namespace Move {
         }
 
         if (l1 || l2) {
-            rotation_fini = true;
             rotation_360 = false;
+            return 1;
         }
+        return 0;
     }
 
-    static void demi_tour_balise_gauche() {
+    int demi_tour_balise_gauche() {
         using namespace LIR;
 
         if (!rotation_360) {
@@ -301,12 +234,13 @@ namespace Move {
         }
 
         if (l1 || l2) {
-            rotation_fini = true;
             rotation_360 = false;
+            return 1;
         }
+        return 0;
     }
 
-    static void demi_tour_balise_droite() {
+    int demi_tour_balise_droite() {
         using namespace LIR;
 
         if (!rotation_360) {
@@ -315,13 +249,14 @@ namespace Move {
         }
 
         if (l8 || l7) {
-            rotation_fini = true;
             rotation_360 = false;
             demi_tour_gauche = false;
+            return 1;
         }
+        return 0;
     }
 
-    static void demi_tour_croisement() {
+    int demi_tour_croisement() {
         using namespace LIR;
 
         if (!rotation_360) {
@@ -335,12 +270,13 @@ namespace Move {
             demi_tour_l8_nul = true;
         } if (demi_tour_l8_nul && l8) {
             rotation_360 = false;
-            rotation_fini = true;
             demi_tour_l8_un = false;
             demi_tour_l8_nul = false;
             demi_tour_l8_deux = false;
             demi_tour_gauche = false;
+            return 1;
         }
+        return 0;
     }
 
     static void priorite_control() {
@@ -394,94 +330,6 @@ namespace Move {
             PID::set_max_out(FREIN_VITESSE);
         } else {
             PID::set_max_out(MAX_VITESSE);
-        }
-    }
-
-    void balise_counter() {
-        if (rotation_360 || en_demi_tour) return;
-
-        if (!balise_droite && LIR::balise_priorite()) {
-            balise_droite = true;
-        }
-
-        if (balise_droite && !LIR::balise_priorite()) {
-            balise_droite = false;
-            balise_droite_counter ++;
-        }
-
-        if (!balise_gauche && LIR::balise_raccourci()) {
-            balise_gauche = true;
-        }
-
-        if (balise_gauche && !LIR::balise_raccourci()) {
-            balise_gauche = false;
-            balise_gauche_counter ++;
-        }
-
-        if (!en_croisement && LIR::croisement()) {
-            en_croisement = true;
-        }
-
-        if (en_croisement && !LIR::croisement()) {
-            en_croisement = false;
-            croisement_counter ++;
-        }
-
-        if (!double_gauche_balise && LIR::balise_raccourci() && LIR::lg) {
-            double_gauche_balise = true;
-        }
-
-        if (double_gauche_balise && !LIR::balise_raccourci() && !LIR::lg) {
-            double_gauche_balise = false;
-            double_gauche_balise_counter ++;
-            balise_gauche_counter -= 2;
-        }
-
-        if (!double_droite_balise && LIR::balise_priorite() && LIR::ld) {
-            double_droite_balise = true;
-        }
-
-        if (double_droite_balise && !LIR::balise_priorite() && !LIR::ld) {
-            double_droite_balise = false;
-            double_droite_balise_counter ++;
-            balise_droite_counter -= 2;
-        }
-    }
-
-    static inline void demi_tour_start() {
-        demi_tour_timer.reset();
-        demi_tour_timer.start();
-        en_demi_tour = true;    
-        DEBUG::print("Demi tour start");
-    }
-
-    void challenge_control() {
-        balise_counter();
-
-        if (!en_demi_tour) {
-            for (int i = 0; i < ARR_SIZE(challenges); i++) {
-                if (challenges[i].predicate()) {
-                    cur_challenge = i;
-                    demi_tour_start();
-                    break;
-                }
-            }
-        }
-
-        if (demi_tour_timer.elapsed_time().count() > challenges[cur_challenge].delay) {
-            challenges[cur_challenge].action();
-
-            if (rotation_fini) {
-                rotation_fini = false;
-                en_demi_tour = false;
-                DEBUG::print("elapsed time %d\r\n", demi_tour_timer.elapsed_time().count());
-                DEBUG::print("Demi tour fini");
-                
-                challenges[cur_challenge].reset();
-
-                demi_tour_timer.stop();
-                demi_tour_timer.reset();
-            }
         }
     }
 
@@ -636,7 +484,7 @@ namespace Move {
         }
 
 #ifdef PRIORITE_ENABLE
-        if (!racourci && !fin_racourci && !en_demi_tour) {
+        if (!racourci && !fin_racourci && !Challenge::en_cours()) {
             priorite_control();
         }
 #endif
@@ -647,7 +495,7 @@ namespace Move {
 #endif
 
 #ifdef CHALLENGE_ENABLE
-            challenge_control();
+            Challenge::control();
 #endif
 
             error_t error = pid_error();
@@ -659,15 +507,6 @@ namespace Move {
     }
 
     static void interrupteur() {
-        //pid_timer_diff = pid_timer.elapsed_time().count() - last_pid_timer;
-/*
-        if (pid_timer_diff < 0) {
-            last_pid_timer = 0;
-        }
-*/
-
-        //if (pid_timer_diff > 0 && pid_timer_diff < INTERRUPT_AWAIT_TIME) return;
-
         if (arret) {
             if (arrivee_timer.elapsed_time().count() < INTERRUPT_AWAIT_TIME && !premier) return;
             mise_en_marche();

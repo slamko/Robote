@@ -20,14 +20,7 @@ int main()
     init();
     
     while (1) {
-        
-       /* if (rise) {
-            printf("ererherher %d\r\n", (int)d);
-            rise = false;
-        }
-        */
         Telecommande::control();
         Move::control();   
-                
     }
 }
