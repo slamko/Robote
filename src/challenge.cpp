@@ -22,6 +22,7 @@ namespace Challenge {
     bool balise_gauche = false;
     bool double_droite_balise = false;
     bool balise_droite = false;
+    bool waiting_cahallenge = false;
     bool challenge_active = false;
     bool en_croisement = false;
 
@@ -70,28 +71,6 @@ namespace Challenge {
     void balise_counter() {
         if (challenge_active) return;
 
-        if (!balise_droite && LIR::balise_priorite()) {
-            balise_droite = true;
-        }
-
-        if (balise_droite && !LIR::balise_priorite()) {
-            balise_droite = false;
-            balise_droite_counter ++;
-        }
-
-        if (!balise_gauche && LIR::balise_raccourci()) {
-            balise_gauche = true;
-        }
-
-        if (balise_gauche && !LIR::balise_raccourci()) {
-            balise_gauche = false;
-            balise_gauche_counter ++;
-        }
-
-        if (!en_croisement && LIR::croisement()) {
-            en_croisement = true;
-        }
-
         if (en_croisement && !LIR::croisement()) {
             en_croisement = false;
             croisement_counter ++;
@@ -116,6 +95,28 @@ namespace Challenge {
             double_droite_balise_counter ++;
             balise_droite_counter -= 2;
         }
+  
+        if (!balise_droite && LIR::balise_priorite()) {
+            balise_droite = true;
+        }
+
+        if (balise_droite && !LIR::balise_priorite()) {
+            balise_droite = false;
+            balise_droite_counter ++;
+        }
+
+        if (!balise_gauche && LIR::balise_raccourci()) {
+            balise_gauche = true;
+        }
+
+        if (balise_gauche && !LIR::balise_raccourci()) {
+            balise_gauche = false;
+            balise_gauche_counter ++;
+        }
+
+        if (!en_croisement && LIR::croisement()) {
+            en_croisement = true;
+        }
     }
 
     static inline void demi_tour_start() {
@@ -136,6 +137,7 @@ namespace Challenge {
             for (int i = 0; i < ARR_SIZE(challenges); i++) {
                 if (challenges[i].predicate()) {
                     cur_challenge = i;
+                    waiting_cahallenge = true;
                     demi_tour_start();
                     break;
                 }
